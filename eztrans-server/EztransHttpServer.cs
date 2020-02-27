@@ -13,7 +13,7 @@ namespace eztrans_server {
     private static readonly EztransXp Translator;
 
     static EztransHttpServer() {
-      Task<EztransXp> task = Task.Run(() => EztransXp.Create());
+      Task<EztransXp> task = EztransXp.Create();
       task.Wait();
       Translator = task.Result;
     }
@@ -28,6 +28,9 @@ namespace eztrans_server {
       this.url = url;
       Listener = new HttpListener();
       Listener.Prefixes.Add(url);
+      Listener.Prefixes.Add("http://127.0.0.1:8000/");
+      //Listener.Prefixes.Add("http://[::1]:8000/");
+      Listener.Prefixes.Add("http://[0:0:0:0:0:0:0:1]:8000/");
     }
 
     public Task Run() {

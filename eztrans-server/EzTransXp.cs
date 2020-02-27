@@ -36,7 +36,7 @@ namespace eztrans_server {
       if (eztPath == null || !File.Exists(GetDllPath(eztPath))) {
         throw new EzTransNotFoundException();
       }
-      IntPtr eztransDll = await LoadNativeDll(eztPath, msDelay);
+      IntPtr eztransDll = await LoadNativeDll(eztPath, msDelay).ConfigureAwait(false);
       return new EztransXp(eztransDll);
     }
 

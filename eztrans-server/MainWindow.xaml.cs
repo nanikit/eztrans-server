@@ -18,8 +18,8 @@ namespace eztrans_server {
 
     private void OnRequest(IPEndPoint ip, string req) {
       string datetime = $"{DateTime.Now:[yyyy-MM-dd HH:mm]}";
-      //string log = $"\n{datetime} ${ip}: ${req?.Substring(0, 100) ?? ""}";
-      string log = $"\n ${datetime}";
+      string head = req?.Substring(0, Math.Min(40, req.Length)) ?? "";
+      string log = $"\n{datetime} {ip.Address}: {head}";
       Action act = () => {
         TbLog.AppendText(log);
       };
