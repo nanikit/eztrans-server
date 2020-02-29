@@ -1,5 +1,7 @@
 # eztrans-server
 
+[![프로그램 창 이미지](doc/main-window.png)](##eztrans-server)
+
 [AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator)와 호환되는 이지트랜스 중개 프로그램입니다.
 하는 일은 [이 파이썬 스크립트](https://github.com/HelloKS/ezTransWeb)와 비슷합니다.
 
