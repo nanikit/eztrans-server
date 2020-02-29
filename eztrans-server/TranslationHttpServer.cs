@@ -82,19 +82,20 @@ namespace eztrans_server {
       await resp.OutputStream.WriteAsync(buf, 0, buf.Length);
     }
 
-    private readonly static char[] pathDelimiter = new char[] { '?' };
     private readonly static char[] paramDelimiter = new char[] { '=' };
 
     private static string? GetTextParam(HttpListenerRequest req) {
-      string[] parts = req.Url.ToString().Split(pathDelimiter, 2);
-      if (parts.Length < 2) {
+      if (req.Url.Query.Length < 1) {
         return null;
       }
 
-      foreach (string part in parts[1].Split('&')) {
-        string[] pair = part.Split(paramDelimiter, 2);
+      string query = req.Url.Query.Substring(1);
+      foreach (string keyVal in query.Split('&')) {
+        string[] pair = keyVal.Split(paramDelimiter, 2);
         if (pair.Length > 1 && pair[0] == "text") {
-          return pair[1];
+          string unescaped = Uri.UnescapeDataString(pair[1]);
+          string unplused = unescaped.Replace('+', ' ');
+          return unplused;
         }
       }
 
