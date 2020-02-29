@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:eztrans_server"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Eztrans server" Height="450" Width="800">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="1*" MinWidth="130"/>
@@ -17,9 +17,8 @@
       <RowDefinition Height="1*"/>
     </Grid.RowDefinitions>
     <TextBlock>서버 주소</TextBlock>
-    <TextBox Grid.Column="1" Name="TbAddress" />
-    <TextBlock Grid.Row="1">이지트랜스 경로</TextBlock>
-    <TextBox Grid.Row="1" Grid.Column="1" Name="TbEztrans" />
-    <TextBox Name="TbLog" Grid.Row="2" Grid.ColumnSpan="2"  />
+    <TextBox Grid.Column="1" Text="{Binding Origin}"/>
+    <Button Grid.Row="1" Grid.ColumnSpan="2" Command="{Binding RestartCommand}">재시작</Button>
+    <TextBox Name="TbLog" Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding Log}" TextChanged="LogScrollDown" />
   </Grid>
 </Window>

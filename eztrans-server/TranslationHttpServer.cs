@@ -1,48 +1,50 @@
 ﻿#nullable enable
 using System;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace eztrans_server {
 
-  class EztransHttpServer : IDisposable {
-    private static readonly EztransXp Translator = new Lazy(() => {
-      Task<EztransXp> task = EztransXp.Create();
-      task.Wait();
-      Translator = task.Result;
-    });
-
-    public readonly string url;
-    public HttpListener Listener;
-    public event Action<IPEndPoint, string?> OnRequest = delegate { };
+  public class TranslationHttpServer : IDisposable {
+    public event Action<IPEndPoint, string?>? OnRequest;
     public Task? Server { get; private set; }
-    private CancellationTokenSource CancellationToken = new CancellationTokenSource();
 
-    public EztransHttpServer(string url = "http://localhost:8000/") {
-      this.url = url;
-      Listener = new HttpListener();
-      Listener.Prefixes.Add(url);
-      Listener.Prefixes.Add("http://127.0.0.1:8000/");
-      //Listener.Prefixes.Add("http://[::1]:8000/");
-      Listener.Prefixes.Add("http://[0:0:0:0:0:0:0:1]:8000/");
+    private readonly IJp2KrTranslator Translator;
+    private readonly HttpListener Listener = new HttpListener();
+    private readonly CancellationTokenSource CancellationToken = new CancellationTokenSource();
+
+    public TranslationHttpServer(IJp2KrTranslator translator) {
+      Translator = translator;
     }
 
-    public Task Run() {
+    public Task Run(Uri endpoint) {
+      Listener.Prefixes.Clear();
+      Listener.Prefixes.Add(GetOrigin(endpoint));
       Listener.Start();
-      Server = HandleIncomingConnections();
+
+      Server = HandleIncomingConnections(endpoint.AbsolutePath);
       return Server;
     }
 
-    private async Task HandleIncomingConnections() {
+    public void Dispose() {
+      if (CancellationToken.IsCancellationRequested) {
+        return;
+      }
+      CancellationToken.Cancel();
+      Listener.Abort();
+    }
+
+    private async Task HandleIncomingConnections(string listenPath) {
       while (!CancellationToken.IsCancellationRequested) {
         HttpListenerContext ctx = await Listener.GetContextAsync().ConfigureAwait(false);
 
         HttpListenerRequest req = ctx.Request;
         HttpListenerResponse resp = ctx.Response;
 
-        if (req.Url.LocalPath == "/translate") {
+        if (req.Url.LocalPath == listenPath) {
           await ProcessTranslation(req, resp).ConfigureAwait(false);
         }
         if (req.Url.LocalPath == "/favicon.ico") {
@@ -55,12 +57,9 @@ namespace eztrans_server {
       Listener.Close();
     }
 
-    private readonly static char[] pathDelimiter = new char[] { '?' };
-    private readonly static char[] paramDelimiter = new char[] { '=' };
-
     private async Task ProcessTranslation(HttpListenerRequest req, HttpListenerResponse resp) {
       string? japanese = GetTextParam(req);
-      OnRequest(req.RemoteEndPoint, japanese);
+      OnRequest?.Invoke(req.RemoteEndPoint, japanese);
       if (japanese == null) {
         return;
       }
@@ -72,6 +71,9 @@ namespace eztrans_server {
       resp.ContentLength64 = buf.LongLength;
       await resp.OutputStream.WriteAsync(buf, 0, buf.Length);
     }
+
+    private readonly static char[] pathDelimiter = new char[] { '?' };
+    private readonly static char[] paramDelimiter = new char[] { '=' };
 
     private static string? GetTextParam(HttpListenerRequest req) {
       string[] parts = req.Url.ToString().Split(pathDelimiter, 2);
@@ -89,8 +91,11 @@ namespace eztrans_server {
       return null;
     }
 
-    public void Dispose() {
-      CancellationToken.Cancel();
+    private static string GetOrigin(Uri endpoint) {
+      string url = endpoint.AbsoluteUri;
+      int idxAfterPath = url.Length - endpoint.PathAndQuery.Length + 1;
+      string origin = url.Substring(0, Math.Max(0, idxAfterPath));
+      return origin;
     }
   }
 }
