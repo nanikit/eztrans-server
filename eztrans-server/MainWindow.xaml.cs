@@ -61,8 +61,9 @@ namespace eztrans_server {
         EztransXp translator = await EztransXp.Create().ConfigureAwait(false);
         HttpServer = new TranslationHttpServer(translator);
         HttpServer.OnRequest += OnRequest;
-        _ = HttpServer.Run(new Uri(Origin));
-        Logs.Add("Server started");
+        Task server = HttpServer.Run(new Uri(Origin));
+        Logs.Add($"서버를 시작했습니다: {Origin}");
+        await server.ConfigureAwait(false);
       }
       catch (Exception e) {
         Logs.Add($"{e.Message}");

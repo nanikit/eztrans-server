@@ -1,9 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Net;
-using System.Security.Policy;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace eztrans_server {
@@ -14,7 +12,7 @@ namespace eztrans_server {
 
     private readonly IJp2KrTranslator Translator;
     private readonly HttpListener Listener = new HttpListener();
-    private readonly CancellationTokenSource CancellationToken = new CancellationTokenSource();
+    private TaskCompletionSource<bool> CancellationSource = new TaskCompletionSource<bool>();
 
     public TranslationHttpServer(IJp2KrTranslator translator) {
       Translator = translator;
@@ -30,31 +28,42 @@ namespace eztrans_server {
     }
 
     public void Dispose() {
-      if (CancellationToken.IsCancellationRequested) {
-        return;
-      }
-      CancellationToken.Cancel();
-      Listener.Abort();
+      CancellationSource.TrySetResult(false);
     }
 
     private async Task HandleIncomingConnections(string listenPath) {
-      while (!CancellationToken.IsCancellationRequested) {
-        HttpListenerContext ctx = await Listener.GetContextAsync().ConfigureAwait(false);
+      using (Listener) {
+        while (await AcceptRequest(listenPath).ConfigureAwait(false)) ;
+        Listener.Close();
+      }
+    }
 
-        HttpListenerRequest req = ctx.Request;
-        HttpListenerResponse resp = ctx.Response;
+    private async Task<bool> AcceptRequest(string listenPath) {
+      if (IsCancelled()) {
+        return false;
+      }
+      Task<HttpListenerContext> listening = Listener.GetContextAsync();
+      await Task.WhenAny(listening, CancellationSource.Task).ConfigureAwait(false);
+      if (IsCancelled()) {
+        return false;
+      }
+      HttpListenerContext ctx = await listening.ConfigureAwait(false);
 
-        if (req.Url.LocalPath == listenPath) {
-          await ProcessTranslation(req, resp).ConfigureAwait(false);
-        }
-        if (req.Url.LocalPath == "/favicon.ico") {
-          resp.AddHeader("Cache-Control", "Max-Age=99999");
-        }
+      HttpListenerRequest req = ctx.Request;
+      using HttpListenerResponse resp = ctx.Response;
 
-        resp.Close();
+      if (req.Url.LocalPath == listenPath) {
+        await ProcessTranslation(req, resp).ConfigureAwait(false);
+      }
+      if (req.Url.LocalPath == "/favicon.ico") {
+        resp.AddHeader("Cache-Control", "Max-Age=99999");
       }
 
-      Listener.Close();
+      return true;
+    }
+
+    private bool IsCancelled() {
+      return !CancellationSource.Task.Status.Equals(TaskStatus.Running);
     }
 
     private async Task ProcessTranslation(HttpListenerRequest req, HttpListenerResponse resp) {
