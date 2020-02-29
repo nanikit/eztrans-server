@@ -63,7 +63,8 @@ namespace eztrans_server {
     }
 
     private bool IsCancelled() {
-      return !CancellationSource.Task.Status.Equals(TaskStatus.Running);
+      var task = CancellationSource.Task;
+      return task.IsCompleted || task.IsCanceled || task.IsFaulted;
     }
 
     private async Task ProcessTranslation(HttpListenerRequest req, HttpListenerResponse resp) {

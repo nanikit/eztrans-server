@@ -64,6 +64,7 @@ namespace eztrans_server {
         Task server = HttpServer.Run(new Uri(Origin));
         Logs.Add($"서버를 시작했습니다: {Origin}");
         await server.ConfigureAwait(false);
+        Logs.Add($"서버를 종료했습니다: {Origin}");
       }
       catch (Exception e) {
         Logs.Add($"{e.Message}");
@@ -71,7 +72,7 @@ namespace eztrans_server {
     }
 
     private void OnRequest(IPEndPoint ip, string? req) {
-      string datetime = $"{DateTime.Now:[yyyy-MM-dd HH:mm]}";
+      string datetime = $"{DateTime.Now:[MM-dd HH:mm:ss]}";
       string head = req?.Substring(0, Math.Min(40, req.Length)) ?? "";
       string log = $"{datetime} {ip.Address}: {head}";
 
