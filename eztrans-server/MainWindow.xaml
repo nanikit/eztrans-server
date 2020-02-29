@@ -19,7 +19,7 @@
     <TextBlock>서버 주소</TextBlock>
     <TextBox Grid.Column="1" Name="TbAddress" />
     <TextBlock Grid.Row="1">이지트랜스 경로</TextBlock>
-    <TextBox Grid.Row="1" Grid.Column="1" Name="TbEzTrans" />
+    <TextBox Grid.Row="1" Grid.Column="1" Name="TbEztrans" />
     <TextBox Name="TbLog" Grid.Row="2" Grid.ColumnSpan="2"  />
   </Grid>
 </Window>

@@ -23,7 +23,7 @@ namespace eztrans_server {
     Task<string?> Translate(string source);
   }
 
-  public class EzTransNotFoundException : ApplicationException {
+  public class EztransNotFoundException : ApplicationException {
     public override string Message => "이지트랜스를 찾지 못했습니다.";
   }
 
@@ -34,7 +34,7 @@ namespace eztrans_server {
         eztPath = GetEztransDirFromReg();
       }
       if (eztPath == null || !File.Exists(GetDllPath(eztPath))) {
-        throw new EzTransNotFoundException();
+        throw new EztransNotFoundException();
       }
       IntPtr eztransDll = await LoadNativeDll(eztPath, msDelay).ConfigureAwait(false);
       return new EztransXp(eztransDll);
@@ -46,20 +46,20 @@ namespace eztrans_server {
     }
 
     private static async Task<IntPtr> LoadNativeDll(string eztPath, int msDelay) {
-      IntPtr EzTransDll = LoadLibrary(GetDllPath(eztPath));
-      if (EzTransDll == IntPtr.Zero) {
+      IntPtr EztransDll = LoadLibrary(GetDllPath(eztPath));
+      if (EztransDll == IntPtr.Zero) {
         int errorCode = Marshal.GetLastWin32Error();
         throw new Exception($"라이브러리 로드 실패(에러 코드: {errorCode})");
       }
 
       await Task.Delay(msDelay).ConfigureAwait(false);
       string key = Path.Combine(eztPath, "Dat");
-      var initEx = GetFuncAddress<J2K_InitializeEx>(EzTransDll, "J2K_InitializeEx");
+      var initEx = GetFuncAddress<J2K_InitializeEx>(EztransDll, "J2K_InitializeEx");
       if (!initEx("CSUSER123455", key)) {
         throw new Exception("엔진 초기화에 실패했습니다.");
       }
 
-      return EzTransDll;
+      return EztransDll;
     }
 
     private static string GetDllPath(string eztPath) {
@@ -78,6 +78,11 @@ namespace eztrans_server {
     private readonly J2K_FreeMem J2kFree;
     private readonly J2K_TranslateMMNTW J2kMmntw;
 
+    private EztransXp(IntPtr eztransDll) {
+      J2kMmntw = GetFuncAddress<J2K_TranslateMMNTW>(eztransDll, "J2K_TranslateMMNTW");
+      J2kFree = GetFuncAddress<J2K_FreeMem>(eztransDll, "J2K_FreeMem");
+    }
+
     public Task<string?> Translate(string jpStr) {
       return Task.FromResult(TranslateInternal(jpStr));
     }
@@ -91,13 +96,8 @@ namespace eztrans_server {
       // 원래 FreeLibrary를 호출하려 했는데 그러면 Access violation이 뜬다.
     }
 
-    private EztransXp(IntPtr eztransDll) {
-      J2kMmntw = GetFuncAddress<J2K_TranslateMMNTW>(eztransDll, "J2K_TranslateMMNTW");
-      J2kFree = GetFuncAddress<J2K_FreeMem>(eztransDll, "J2K_FreeMem");
-    }
-
     private string? TranslateInternal(string jpStr) {
-      var escaper = new EzTransEscaper();
+      var escaper = new EztransEscaper();
       string escaped = escaper.Escape(jpStr);
       IntPtr p = J2kMmntw(0, escaped);
       if (p == IntPtr.Zero) {
@@ -126,13 +126,13 @@ namespace eztrans_server {
 
 
   /// <summary>
-  /// EzTrans trims the string, so pre/post process are required to preserve spaces.
+  /// Eztrans trims the string, so pre/post process are required to preserve spaces.
   /// </summary>
   /// <remarks>
   /// It can't be a simple text to text function. It will affect translation result
   /// to replace spaces at the end of line with non spaces.
   /// </remarks>
-  internal class EzTransEscaper {
+  internal class EztransEscaper {
 
     enum EscapeKind {
       None,
