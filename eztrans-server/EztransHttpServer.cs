@@ -1,22 +1,18 @@
 ﻿#nullable enable
 using System;
-using System.Text;
 using System.Net;
-using System.Threading.Tasks;
+using System.Text;
 using System.Threading;
-using System.Linq;
-using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace eztrans_server {
 
   class EztransHttpServer : IDisposable {
-    private static readonly EztransXp Translator;
-
-    static EztransHttpServer() {
+    private static readonly EztransXp Translator = new Lazy(() => {
       Task<EztransXp> task = EztransXp.Create();
       task.Wait();
       Translator = task.Result;
-    }
+    });
 
     public readonly string url;
     public HttpListener Listener;
