@@ -13,7 +13,13 @@ namespace eztrans_server {
   /// </summary>
   public partial class MainWindow : Window {
     public MainWindow() {
-      DataContext = new HttpServerVM();
+      var vm = new HttpServerVM();
+      string build = Properties.Resources.BuildDate;
+      string date = $"{build.Substring(2, 2)}{build.Substring(5, 2)}{build.Substring(8, 2)}";
+      vm.Logs.Add($"eztrans-server v{date} by nanikit");
+      _ = vm.Restart();
+
+      DataContext = vm;
       InitializeComponent();
     }
 
@@ -49,7 +55,6 @@ namespace eztrans_server {
       RestartCommand = new RelayCommand(() => _ = Restart());
       Logs = new ObservableCollection<string>();
       Logs.CollectionChanged += MergeLogs;
-      _ = Restart();
     }
 
     public async Task Restart() {

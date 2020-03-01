@@ -101,5 +101,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\BuildDate.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>echo %25date%25 &gt; "$(ProjectDir)Properties\BuildDate.txt"</PreBuildEvent>
+  </PropertyGroup>
 </Project>
