@@ -93,9 +93,9 @@ namespace eztrans_server {
       foreach (string keyVal in query.Split('&')) {
         string[] pair = keyVal.Split(paramDelimiter, 2);
         if (pair.Length > 1 && pair[0] == "text") {
-          string unescaped = Uri.UnescapeDataString(pair[1]);
-          string unplused = unescaped.Replace('+', ' ');
-          return unplused;
+          string unplused = pair[1].Replace('+', ' ');
+          string unescaped = Uri.UnescapeDataString(unplused);
+          return unescaped;
         }
       }
 
