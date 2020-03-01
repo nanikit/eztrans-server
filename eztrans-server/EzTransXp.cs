@@ -23,21 +23,51 @@ namespace eztrans_server {
     Task<string?> Translate(string source);
   }
 
-  public class EztransNotFoundException : ApplicationException {
-    public override string Message => "이지트랜스를 찾지 못했습니다.";
+  public class EztransException : Exception {
+    public EztransException(string message) : base(message) { }
+  }
+  public class EztransNotFoundException : EztransException {
+    public EztransNotFoundException(string message) : base($"이지트랜스를 찾지 못했습니다{message}") { }
   }
 
   public class EztransXp : IJp2KrTranslator {
 
     public static async Task<EztransXp> Create(string? eztPath = null, int msDelay = 200) {
-      if (string.IsNullOrWhiteSpace(eztPath)) {
-        eztPath = GetEztransDirFromReg();
+      var exceptions = new Dictionary<string, Exception>();
+      foreach (string path in GetEztransDirs(eztPath)) {
+        if (!File.Exists(Path.Combine(path, "J2KEngine.dll"))) {
+          continue;
+        }
+        try {
+          IntPtr eztransDll = await LoadNativeDll(path, msDelay).ConfigureAwait(false);
+          return new EztransXp(eztransDll);
+        }
+        catch (Exception e) {
+          exceptions.Add(path, e);
+        }
       }
-      if (eztPath == null || !File.Exists(GetDllPath(eztPath))) {
-        throw new EztransNotFoundException();
+
+      string detail = string.Join("", exceptions.Select(x => $"\n  {x.Key}: {x.Value.Message}"));
+      throw new EztransNotFoundException(detail);
+    }
+
+    private static IEnumerable<string> GetEztransDirs(string? path) {
+      var paths = new List<string>();
+
+      if (path != null) {
+        paths.Add(path);
       }
-      IntPtr eztransDll = await LoadNativeDll(eztPath, msDelay).ConfigureAwait(false);
-      return new EztransXp(eztransDll);
+
+      string? regPath = GetEztransDirFromReg();
+      if (regPath != null) {
+        paths.Add(regPath);
+      }
+
+      string defPath = @"C:\Program Files (x86)\ChangShinSoft\ezTrans XP";
+      paths.Add(defPath);
+      paths.AddRange(GetAssemblyParentDirectories());
+
+      return paths.Distinct();
     }
 
     public static string? GetEztransDirFromReg() {
@@ -45,18 +75,30 @@ namespace eztrans_server {
       return key.OpenSubKey(@"Software\ChangShin\ezTrans")?.GetValue(@"FilePath") as string;
     }
 
+    private static IEnumerable<string> GetAssemblyParentDirectories() {
+      string child = System.Reflection.Assembly.GetEntryAssembly().Location;
+      while (true) {
+        string? parent = Path.GetDirectoryName(child);
+        if (parent == null) {
+          break;
+        }
+        yield return parent;
+        child = parent;
+      }
+    }
+
     private static async Task<IntPtr> LoadNativeDll(string eztPath, int msDelay) {
       IntPtr EztransDll = LoadLibrary(GetDllPath(eztPath));
       if (EztransDll == IntPtr.Zero) {
         int errorCode = Marshal.GetLastWin32Error();
-        throw new Exception($"라이브러리 로드 실패(에러 코드: {errorCode})");
+        throw new EztransException($"라이브러리 로드 실패(에러 코드: {errorCode})");
       }
 
       await Task.Delay(msDelay).ConfigureAwait(false);
       string key = Path.Combine(eztPath, "Dat");
       var initEx = GetFuncAddress<J2K_InitializeEx>(EztransDll, "J2K_InitializeEx");
       if (!initEx("CSUSER123455", key)) {
-        throw new Exception("엔진 초기화에 실패했습니다.");
+        throw new EztransException("엔진 초기화에 실패했습니다.");
       }
 
       return EztransDll;
@@ -69,7 +111,7 @@ namespace eztrans_server {
     private static T GetFuncAddress<T>(IntPtr dll, string name) {
       IntPtr addr = GetProcAddress(dll, name);
       if (addr == IntPtr.Zero) {
-        throw new Exception("Ehnd 파일이 아닙니다.");
+        throw new EztransException("Ehnd 파일이 아닙니다.");
       }
       return Marshal.GetDelegateForFunctionPointer<T>(addr);
     }
