@@ -49,7 +49,14 @@ namespace eztrans_server {
       set => Set(ref _Origin, value);
     }
 
+    private string _Title = "Eztrans server";
+    public string Title {
+      get => _Title;
+      set => Set(ref _Title, value);
+    }
+
     private TranslationHttpServer? HttpServer;
+    private int RequestCount = 0;
 
     public HttpServerVM() {
       RestartCommand = new RelayCommand(() => _ = Restart());
@@ -63,6 +70,7 @@ namespace eztrans_server {
           HttpServer.Dispose();
         }
 
+        RequestCount = 0;
         EztransXp translator = await EztransXp.Create().ConfigureAwait(false);
         HttpServer = new TranslationHttpServer(translator);
         HttpServer.OnRequest += OnRequest;
@@ -85,6 +93,7 @@ namespace eztrans_server {
         Logs.RemoveAt(0);
       }
       Logs.Add(log);
+      Title = $"요청 수: {++RequestCount}";
     }
 
     private void MergeLogs(object sender, NotifyCollectionChangedEventArgs e) {
