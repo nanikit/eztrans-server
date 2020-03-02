@@ -2,6 +2,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,9 +15,7 @@ namespace eztrans_server {
   public partial class MainWindow : Window {
     public MainWindow() {
       var vm = new HttpServerVM();
-      string build = Properties.Resources.BuildDate;
-      string date = $"{build.Substring(2, 2)}{build.Substring(5, 2)}{build.Substring(8, 2)}";
-      vm.Logs.Add($"eztrans-server v{date} by nanikit");
+      PrintProgramVersion(vm);
       _ = vm.Restart();
 
       DataContext = vm;
@@ -29,6 +28,12 @@ namespace eztrans_server {
       if (isBottommost) {
         TbLog.ScrollToEnd();
       }
+    }
+
+    private static void PrintProgramVersion(HttpServerVM vm) {
+      string build = Properties.Resources.BuildDate;
+      string date = $"{build.Substring(2, 2)}{build.Substring(5, 2)}{build.Substring(8, 2)}";
+      vm.Logs.Add($"eztrans-server v{date} by nanikit");
     }
   }
 
@@ -62,6 +67,8 @@ namespace eztrans_server {
       RestartCommand = new RelayCommand(() => _ = Restart());
       Logs = new ObservableCollection<string>();
       Logs.CollectionChanged += MergeLogs;
+
+      SetOriginFromCommandLine();
     }
 
     public async Task Restart() {
@@ -82,16 +89,51 @@ namespace eztrans_server {
         Logs.Add($"서버를 종료했습니다: {uri}");
       }
       catch (HttpListenerException e) {
-        // access denied
-        if (e.ErrorCode == 5) {
-          Logs.Add("외부로 연결하려면 관리자 권한으로 실행해주세요.");
+        int codeAccessDenied = 5;
+        if (e.ErrorCode == codeAccessDenied) {
+          Logs.Add("외부와 연결하기 위해 관리자 권한으로 재실행합니다.");
+          RunSelfAsAdmin();
         }
         else {
-          Logs.Add($"{e.Message}");
+          Logs.Add(e.Message);
         }
       }
       catch (Exception e) {
-        Logs.Add($"{e.Message}");
+        Logs.Add(e.Message);
+      }
+    }
+
+    private void SetOriginFromCommandLine() {
+      string[] args = Environment.GetCommandLineArgs();
+      if (args.Length >= 2) {
+        LogIfThrown(() => {
+          var uri = new Uri(args[1]);
+          Origin = uri.AbsoluteUri;
+        });
+      }
+    }
+
+    private void RunSelfAsAdmin() {
+      LogIfThrown(() => {
+        Process p = new Process();
+        p.StartInfo.Verb = "runas";
+        p.StartInfo.UseShellExecute = true;
+        p.StartInfo.FileName = System.Reflection.Assembly.GetEntryAssembly().Location;
+        p.StartInfo.Arguments = Origin;
+        p.Start();
+
+        Application.Current.Dispatcher.InvokeAsync(() => {
+          Application.Current.Shutdown();
+        });
+      });
+    }
+
+    private void LogIfThrown(Action action) {
+      try {
+        action();
+      }
+      catch (Exception e) {
+        Logs.Add(e.Message);
       }
     }
 
