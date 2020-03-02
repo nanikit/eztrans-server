@@ -74,10 +74,12 @@ namespace eztrans_server {
         EztransXp translator = await EztransXp.Create().ConfigureAwait(false);
         HttpServer = new TranslationHttpServer(translator);
         HttpServer.OnRequest += OnRequest;
-        Task server = HttpServer.Run(new Uri(Origin));
-        Logs.Add($"서버를 시작했습니다: {Origin}");
+
+        var uri = new Uri(Origin);
+        Task server = HttpServer.Run(uri);
+        Logs.Add($"서버를 시작했습니다: {uri}");
         await server.ConfigureAwait(false);
-        Logs.Add($"서버를 종료했습니다: {Origin}");
+        Logs.Add($"서버를 종료했습니다: {uri}");
       }
       catch (Exception e) {
         Logs.Add($"{e.Message}");
