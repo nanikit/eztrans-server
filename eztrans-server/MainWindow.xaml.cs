@@ -81,6 +81,15 @@ namespace eztrans_server {
         await server.ConfigureAwait(false);
         Logs.Add($"서버를 종료했습니다: {uri}");
       }
+      catch (HttpListenerException e) {
+        // access denied
+        if (e.ErrorCode == 5) {
+          Logs.Add("외부로 연결하려면 관리자 권한으로 실행해주세요.");
+        }
+        else {
+          Logs.Add($"{e.Message}");
+        }
+      }
       catch (Exception e) {
         Logs.Add($"{e.Message}");
       }
