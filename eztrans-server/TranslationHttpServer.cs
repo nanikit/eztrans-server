@@ -47,6 +47,12 @@ namespace eztrans_server {
       if (IsCancelled()) {
         return false;
       }
+      _ = Task.Run(() => SendResponse(listenPath, listening));
+
+      return true;
+    }
+
+    private async Task SendResponse(string listenPath, Task<HttpListenerContext> listening) {
       HttpListenerContext ctx = await listening.ConfigureAwait(false);
 
       HttpListenerRequest req = ctx.Request;
@@ -58,8 +64,6 @@ namespace eztrans_server {
       if (req.Url.LocalPath == "/favicon.ico") {
         resp.AddHeader("Cache-Control", "Max-Age=99999");
       }
-
-      return true;
     }
 
     private bool IsCancelled() {

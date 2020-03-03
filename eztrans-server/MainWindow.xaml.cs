@@ -78,7 +78,8 @@ namespace eztrans_server {
         }
 
         RequestCount = 0;
-        EztransXp translator = await EztransXp.Create().ConfigureAwait(false);
+        IJp2KrTranslator translator = await EztransXp.Create().ConfigureAwait(false);
+        translator = new BatchTranslator(translator);
         HttpServer = new TranslationHttpServer(translator);
         HttpServer.OnRequest += OnRequest;
 
