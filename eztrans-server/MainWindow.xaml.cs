@@ -7,6 +7,8 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Threading;
 
 namespace eztrans_server {
   /// <summary>
@@ -15,12 +17,28 @@ namespace eztrans_server {
   public partial class MainWindow : Window {
     public MainWindow() {
       var vm = new HttpServerVM();
-      PrintProgramVersion(vm);
-      _ = vm.Restart();
-
       DataContext = vm;
       InitializeComponent();
+
+      PrintProgramVersion(vm);
+      vm.Logs.CollectionChanged += LogVmItem;
+      _ = vm.Restart();
     }
+
+    private void LogVmItem(object sender, NotifyCollectionChangedEventArgs e) {
+      if (e.Action == NotifyCollectionChangedAction.Add) {
+        Log(e.NewItems[0] as string ?? "");
+      }
+    }
+
+    private void Log(string s) => Dispatcher.InvokeAsync(() => {
+      BlockCollection blocks = TbLog.Document.Blocks;
+      if (blocks.Count >= 1000) {
+        blocks.Remove(blocks.FirstBlock);
+      }
+      var paragraph = new Paragraph(new Run(s));
+      blocks.Add(paragraph);
+    });
 
     private void LogScrollDown(object sender, TextChangedEventArgs e) {
       double bottom = TbLog.VerticalOffset + TbLog.ViewportHeight;
@@ -30,10 +48,11 @@ namespace eztrans_server {
       }
     }
 
-    private static void PrintProgramVersion(HttpServerVM vm) {
+    private void PrintProgramVersion(HttpServerVM vm) {
       string build = Properties.Resources.BuildDate;
       string date = $"{build.Substring(2, 2)}{build.Substring(5, 2)}{build.Substring(8, 2)}";
-      vm.Logs.Add($"eztrans-server v{date} by nanikit");
+      TbLog.Document.Blocks.Clear();
+      Log($"eztrans-server v{date} by nanikit");
     }
   }
 
@@ -41,12 +60,6 @@ namespace eztrans_server {
     public ObservableCollection<string> Logs { get; private set; }
 
     public RelayCommand RestartCommand { get; private set; }
-
-    private string _Log = "";
-    public string Log {
-      get => _Log;
-      set => Set(ref _Log, value);
-    }
 
     private string _Origin = "http://localhost:8000/";
     public string Origin {
@@ -66,8 +79,6 @@ namespace eztrans_server {
     public HttpServerVM() {
       RestartCommand = new RelayCommand(() => _ = Restart());
       Logs = new ObservableCollection<string>();
-      Logs.CollectionChanged += MergeLogs;
-
       SetOriginFromCommandLine();
     }
 
@@ -143,15 +154,13 @@ namespace eztrans_server {
       string head = req?.Substring(0, Math.Min(40, req.Length)) ?? "";
       string log = $"{datetime} {ip.Address}: {head}";
 
-      if (Logs.Count > 1000) {
-        Logs.RemoveAt(0);
-      }
-      Logs.Add(log);
-      Title = $"요청 수: {++RequestCount}";
-    }
-
-    private void MergeLogs(object sender, NotifyCollectionChangedEventArgs e) {
-      Log = string.Join("\n", Logs);
+      Application.Current.Dispatcher.InvokeAsync(() => {
+        if (Logs.Count > 1000) {
+          Logs.RemoveAt(0);
+        }
+        Logs.Add(log);
+        Title = $"요청 수: {++RequestCount}";
+      });
     }
   }
 }

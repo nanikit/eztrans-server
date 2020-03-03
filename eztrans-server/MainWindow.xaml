@@ -11,7 +11,13 @@
       <RowDefinition Height="40"/>
       <RowDefinition Height="1*"/>
     </Grid.RowDefinitions>
-    <TextBox Name="TbLog" Grid.Row="1" Text="{Binding Log}" TextChanged="LogScrollDown" Margin="0 -1 0 0" />
+    <RichTextBox Name="TbLog" Grid.Row="1" TextChanged="LogScrollDown" Margin="0 -1 0 0" >
+      <RichTextBox.Resources>
+        <Style TargetType="{x:Type Paragraph}">
+          <Setter Property="Margin" Value="0"/>
+        </Style>
+      </RichTextBox.Resources>
+    </RichTextBox>
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
