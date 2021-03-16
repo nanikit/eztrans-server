@@ -17,7 +17,7 @@ Endpoint=CustomTranslate
 [Custom]
 Url=http://localhost:8000/
 ```
-4. 이 프로그램을 실행합니다.
+4. [eztrans-server.exe](https://github.com/nanikit/eztrans-server/releases)를 받아 실행합니다.
 5. 게임을 실행합니다.
 
 
