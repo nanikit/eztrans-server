@@ -8,8 +8,6 @@ namespace EZTransServer.Core.Translator
     /// </summary>
     public interface ITranslator : IDisposable
     {
-        #nullable enable
-
         /// <summary>
         /// Translate the source text.
         /// </summary>

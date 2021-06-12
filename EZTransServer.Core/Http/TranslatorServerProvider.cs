@@ -8,12 +8,9 @@ namespace EZTransServer.Core.Http
 {
     public class TranslatorServerProvider : IDisposable
     {
-        #nullable enable
 
         public event Action<IPEndPoint, string?>? OnRequest;
         public Task? Server { get; private set; }
-        
-        #nullable disable
 
         private readonly ITranslator Translator;
         private readonly HttpListener Listener = new HttpListener();
