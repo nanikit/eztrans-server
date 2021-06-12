@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 namespace EZTransServer.Core.Translator
 {
     /// <summary>
-    /// It merge / split translation works for single threaded translator.
+    /// It merge or split translation works for single threaded translator.
     /// </summary>
     class BatchTranslator : ITranslator
     {
-
         private class Work
         {
             public readonly string Text;
@@ -29,12 +28,21 @@ namespace EZTransServer.Core.Translator
         private readonly ConcurrentBuffer<Work> _works = new ConcurrentBuffer<Work>();
         private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
 
+        /// <summary>
+        /// Create a new batch translator instance.
+        /// </summary>
+        /// <param name="translator">Translator provider to use.</param>
         public BatchTranslator(ITranslator translator)
         {
             _translator = translator;
             _worker = ProcessQueue();
         }
 
+        /// <summary>
+        /// Translate the source text.
+        /// </summary>
+        /// <param name="source">Source text.</param>
+        /// <returns>Task result</returns>
         public Task<string?> Translate(string source)
         {
             var work = new Work(source);
@@ -42,6 +50,10 @@ namespace EZTransServer.Core.Translator
             return work.Client.Task;
         }
 
+        /// <summary>
+        /// Process the queue.
+        /// </summary>
+        /// <returns>Task result</returns>
         public async Task ProcessQueue()
         {
             CancellationToken token = _cancellation.Token;
@@ -61,6 +73,16 @@ namespace EZTransServer.Core.Translator
                     works[i].Client.TrySetResult(translateds[i]);
                 }
             }
+        }
+
+        /// <summary>
+        /// Release the instance.
+        /// </summary>
+        public void Dispose()
+        {
+            _cancellation.Cancel();
+            _cancellation.Dispose();
+            _translator.Dispose();
         }
 
         private IEnumerable<string> SplitBySegmentNewline(string merged, IEnumerable<string> texts)
@@ -101,13 +123,6 @@ namespace EZTransServer.Core.Translator
             }
             while (_works.PendingSize > 0);
             return works;
-        }
-
-        public void Dispose()
-        {
-            _cancellation.Cancel();
-            _cancellation.Dispose();
-            _translator.Dispose();
         }
     }
 }

@@ -5,14 +5,44 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EZTransServer.Core.Translator
 {
+    /// <summary>
+    /// It provides an EZTransXP japanese to korean translator.
+    /// </summary>
     public class EZTransXPTranslator : ITranslator
     {
+        #region ::PInvokes::
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string libname);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
+
+        delegate bool J2K_InitializeEx([MarshalAs(UnmanagedType.LPStr)] string user, [MarshalAs(UnmanagedType.LPStr)] string key);
+        delegate IntPtr J2K_TranslateMMNTW(int data0, [MarshalAs(UnmanagedType.LPWStr)] string jpStr);
+        delegate void J2K_FreeMem(IntPtr ptr);
+
+        #endregion
+
+        private readonly J2K_FreeMem J2kFree;
+        private readonly J2K_TranslateMMNTW J2kMmntw;
+
+        private EZTransXPTranslator(IntPtr eztransDll)
+        {
+            J2kMmntw = GetFuncAddress<J2K_TranslateMMNTW>(eztransDll, "J2K_TranslateMMNTW");
+            J2kFree = GetFuncAddress<J2K_FreeMem>(eztransDll, "J2K_FreeMem");
+        }
+
+        /// <summary>
+        /// Create a new EZTransXP translator instance.
+        /// </summary>
+        /// <param name="eztPath">Path of EZTransXP.</param>
+        /// <param name="msDelay">Delay for loading library.</param>
+        /// <returns>Task result</returns>
         public static async Task<EZTransXPTranslator> Create(string? eztPath = null, int msDelay = 200)
         {
             var exceptions = new Dictionary<string, Exception>();
@@ -37,6 +67,34 @@ namespace EZTransServer.Core.Translator
             throw new EztransNotFoundException(detail);
         }
 
+        /// <summary>
+        /// Translate the source text.
+        /// </summary>
+        /// <param name="source">Source text.</param>
+        /// <returns>Task result</returns>
+        public Task<string?> Translate(string source)
+        {
+            return Task.FromResult(TranslateInternal(source));
+        }
+
+        /// <summary>
+        /// Check if Hdor(꿀도르) dictionary is applied.
+        /// </summary>
+        /// <returns>Task result</returns>
+        public async Task<bool> IsHdorEnabled()
+        {
+            string? chk = await Translate("蜜ドル辞典").ConfigureAwait(false);
+            return chk?.Contains("OK") ?? false;
+        }
+
+        /// <summary>
+        /// Release the instance.
+        /// </summary>
+        public void Dispose()
+        {
+            // 원래 FreeLibrary를 호출하려 했는데 그러면 Access violation이 뜬다.
+        }
+
         private static IEnumerable<string> GetEztransDirs(string? path)
         {
             var paths = new List<string>();
@@ -59,7 +117,7 @@ namespace EZTransServer.Core.Translator
             return paths.Distinct();
         }
 
-        public static string? GetEztransDirFromReg()
+        private static string? GetEztransDirFromReg()
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
@@ -74,7 +132,7 @@ namespace EZTransServer.Core.Translator
 
         private static IEnumerable<string> GetAssemblyParentDirectories()
         {
-            string child = System.Reflection.Assembly.GetEntryAssembly().Location;
+            string? child = System.Reflection.Assembly.GetEntryAssembly()?.Location;
             while (true)
             {
                 string? parent = Path.GetDirectoryName(child);
@@ -122,32 +180,6 @@ namespace EZTransServer.Core.Translator
             return Marshal.GetDelegateForFunctionPointer<T>(addr);
         }
 
-
-        private readonly J2K_FreeMem J2kFree;
-        private readonly J2K_TranslateMMNTW J2kMmntw;
-
-        private EZTransXPTranslator(IntPtr eztransDll)
-        {
-            J2kMmntw = GetFuncAddress<J2K_TranslateMMNTW>(eztransDll, "J2K_TranslateMMNTW");
-            J2kFree = GetFuncAddress<J2K_FreeMem>(eztransDll, "J2K_FreeMem");
-        }
-
-        public Task<string?> Translate(string jpStr)
-        {
-            return Task.FromResult(TranslateInternal(jpStr));
-        }
-
-        public async Task<bool> IsHdorEnabled()
-        {
-            string? chk = await Translate("蜜ドル辞典").ConfigureAwait(false);
-            return chk?.Contains("OK") ?? false;
-        }
-
-        public void Dispose()
-        {
-            // 원래 FreeLibrary를 호출하려 했는데 그러면 Access violation이 뜬다.
-        }
-
         private string? TranslateInternal(string jpStr)
         {
             var escaper = new EscapeProcessor();
@@ -157,24 +189,10 @@ namespace EZTransServer.Core.Translator
             {
                 return null;
             }
-            string ret = Marshal.PtrToStringAuto(p);
+            string? ret = Marshal.PtrToStringAuto(p);
             J2kFree(p);
             string? unescaped = ret == null ? null : escaper.Unescape(ret);
             return unescaped;
         }
-
-        #region PInvoke
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr LoadLibrary(string libname);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
-
-        delegate bool J2K_InitializeEx(
-          [MarshalAs(UnmanagedType.LPStr)] string user,
-          [MarshalAs(UnmanagedType.LPStr)] string key);
-        delegate IntPtr J2K_TranslateMMNTW(int data0, [MarshalAs(UnmanagedType.LPWStr)] string jpStr);
-        delegate void J2K_FreeMem(IntPtr ptr);
-        #endregion
     }
 }

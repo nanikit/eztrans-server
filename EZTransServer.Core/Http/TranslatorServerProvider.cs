@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace EZTransServer.Core.Http
 {
+    /// <summary>
+    /// It provides a translator server.
+    /// </summary>
     public class TranslatorServerProvider : IDisposable
     {
         private readonly ITranslator _translator;
@@ -13,29 +16,29 @@ namespace EZTransServer.Core.Http
         private TaskCompletionSource<bool> _cancellationSource = new TaskCompletionSource<bool>();
 
         /// <summary>
-        /// 
+        /// An event that occurs when a new request is made.
         /// </summary>
         public event Action<IPEndPoint, string?>? OnRequest;
 
         /// <summary>
-        /// 
+        /// Asynchronous task for processing requests.
         /// </summary>
         public Task? Server { get; private set; }
 
         /// <summary>
-        /// 
+        /// Create a new translator server provider instance.
         /// </summary>
-        /// <param name="translator"></param>
+        /// <param name="translator">Translator provider to use.</param>
         public TranslatorServerProvider(ITranslator translator)
         {
             _translator = translator;
         }
 
         /// <summary>
-        /// 
+        /// Start the translator server.
         /// </summary>
-        /// <param name="endpoint"></param>
-        /// <returns></returns>
+        /// <param name="endpoint">Endpoint of server.</param>
+        /// <returns>Task result</returns>
         public Task Run(Uri endpoint)
         {
             _listener.Prefixes.Clear();
@@ -47,7 +50,7 @@ namespace EZTransServer.Core.Http
         }
 
         /// <summary>
-        /// 
+        /// Release the instance.
         /// </summary>
         public void Dispose()
         {
@@ -89,11 +92,11 @@ namespace EZTransServer.Core.Http
             HttpListenerRequest req = ctx.Request;
             using HttpListenerResponse resp = ctx.Response;
 
-            if (req.Url.LocalPath == listenPath)
+            if (req.Url?.LocalPath == listenPath)
             {
                 await ProcessTranslation(req, resp).ConfigureAwait(false);
             }
-            if (req.Url.LocalPath == "/favicon.ico")
+            if (req.Url?.LocalPath == "/favicon.ico")
             {
                 resp.AddHeader("Cache-Control", "Max-Age=99999");
             }
@@ -114,10 +117,10 @@ namespace EZTransServer.Core.Http
                 return;
             }
 
-            string? korean = await _translator.Translate(originalText ?? "").ConfigureAwait(false);
+            string? translatedText = await _translator.Translate(originalText ?? "").ConfigureAwait(false);
 
             resp.ContentType = "text/plain; charset=utf-8";
-            byte[] buf = Encoding.UTF8.GetBytes(korean);
+            byte[] buf = Encoding.UTF8.GetBytes(translatedText);
             resp.ContentLength64 = buf.LongLength;
             await resp.OutputStream.WriteAsync(buf, 0, buf.Length);
         }
@@ -126,7 +129,7 @@ namespace EZTransServer.Core.Http
 
         private static string? GetTextParam(HttpListenerRequest req)
         {
-            if (req.Url.Query.Length < 1)
+            if (req.Url?.Query.Length < 1)
             {
                 return null;
             }
