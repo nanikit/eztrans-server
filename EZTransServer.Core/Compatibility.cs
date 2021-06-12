@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace EZTransServer.Core
 {
@@ -16,6 +17,14 @@ namespace EZTransServer.Core
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             return isWindows;
+        }
+
+        /// <summary>
+        /// Registers code pages.
+        /// </summary>
+        public static void RegisterCodePages()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
     }
 }

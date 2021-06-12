@@ -61,7 +61,7 @@ namespace EZTransServer.Core.Http
         {
             using (_listener)
             {
-                while (await AcceptRequest(listenPath).ConfigureAwait(false)) ;
+                while (await AcceptRequest(listenPath).ConfigureAwait(false));
                 _listener.Close();
             }
         }
@@ -118,7 +118,6 @@ namespace EZTransServer.Core.Http
             }
 
             string? translatedText = await _translator.Translate(originalText ?? "").ConfigureAwait(false);
-
             resp.ContentType = "text/plain; charset=utf-8";
             byte[] buf = Encoding.UTF8.GetBytes(translatedText);
             resp.ContentLength64 = buf.LongLength;
