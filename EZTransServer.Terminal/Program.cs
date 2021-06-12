@@ -18,7 +18,7 @@ namespace EZTransServer.Terminal
 
         private static ReporterManager _reporterManager;
 
-        private static string _path;
+        private static string _eztransPath;
         private static string _origin;
         private static int _loadDelay;
 
@@ -36,6 +36,7 @@ namespace EZTransServer.Terminal
             {
                 if (InitializeReportManager() && InitializeArguments(args))
                 {
+                    Compatibility.RegisterCodePages();
                     await InitializeServer();
                 }
             }
@@ -69,7 +70,7 @@ namespace EZTransServer.Terminal
                 Option pathOption = new Option<string>("--eztrans-path", getDefaultValue: () => @"C:\Program Files (x86)\ChangShinSoft\ezTrans XP", description: "The path of EZTransXP.");
                 pathOption.AddAlias("-p");
 
-                Option originOption = new Option<string>("--origin", getDefaultValue: () => "http://localhost:8080", description: "The origin URL which the server is used for watching requests.");
+                Option originOption = new Option<string>("--origin", getDefaultValue: () => "http://localhost:8000", description: "The origin URL which the server is used for watching requests.");
                 originOption.AddAlias("-o");
 
                 Option loadDelayOption = new Option<int>("--load-delay", getDefaultValue: () => 200, description: "The delay for ignoring timeout.");
@@ -80,9 +81,9 @@ namespace EZTransServer.Terminal
                 rootCommand.Description = "Terminal for EZTransXP Server";
 
                 // Note that the parameters of the handler method are matched according to the names of the options
-                rootCommand.Handler = CommandHandler.Create<string, string, int>((path, origin, loadDelay) =>
+                rootCommand.Handler = CommandHandler.Create<string, string, int>((eztransPath, origin, loadDelay) =>
                 {
-                    _path = path;
+                    _eztransPath = eztransPath;
                     _origin = origin;
                     _loadDelay = loadDelay;
                 });
@@ -92,7 +93,7 @@ namespace EZTransServer.Terminal
 
                 if (result == 0)
                 {
-                    _reporterManager.AddReport($"EZTRANS_PATH: '{_path}', ORIGIN: '{_origin}', LOAD_DELAY: {_loadDelay}");
+                    _reporterManager.AddReport($"EZTRANS_PATH: '{_eztransPath}', ORIGIN: '{_origin}', LOAD_DELAY: {_loadDelay}");
                     _reporterManager.AddReport("Arguments are initialized.");
                     return true;
                 }
@@ -119,7 +120,7 @@ namespace EZTransServer.Terminal
                 }
 
                 _requestCount = 0;
-                ITranslator translator = await EZTransXPTranslator.Create(eztPath: _path, msDelay: _loadDelay).ConfigureAwait(false);
+                ITranslator translator = await EZTransXPTranslator.Create(eztPath: _eztransPath, msDelay: _loadDelay).ConfigureAwait(false);
                 translator = new BatchTranslator(translator);
                 _translatorServer = new TranslatorServerProvider(translator);
                 _translatorServer.OnRequest += OnRequest;
@@ -157,7 +158,7 @@ namespace EZTransServer.Terminal
         private static void OnRequest(IPEndPoint ip, string? req)
         {
             string head = req?.Substring(0, Math.Min(40, req.Length)) ?? "";
-            _reporterManager.AddReport($"({_requestCount}){ip.Address} requested '{head}'.");
+            _reporterManager.AddReport($"({++_requestCount})'{ip.Address}' requested '{head}'.");
         }
     }
 }
