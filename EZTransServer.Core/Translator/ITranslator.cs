@@ -11,8 +11,8 @@ namespace EZTransServer.Core.Translator
         /// <summary>
         /// Translate the source text.
         /// </summary>
-        /// <param name="source">original text</param>
-        /// <returns>translated text</returns>
+        /// <param name="source">Original text.</param>
+        /// <returns>Translated text</returns>
         Task<string?> Translate(string source);
     }
 }

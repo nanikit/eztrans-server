@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -72,11 +71,6 @@ namespace EZTransServer.Core.Utility
         {
             get;
             private set;
-        }
-
-        static TextUtility()
-        {
-            SOHFallbackUTF8 = GetSOHFallbackUTF8();
         }
 
         public static Encoding GetSOHFallbackEncoding(int codepage)

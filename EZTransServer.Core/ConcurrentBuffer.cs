@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace EZTransServer.Core
 {
-    public class ConcurrentBuffer<T>
+    internal class ConcurrentBuffer<T>
     {
 
         private class Client
