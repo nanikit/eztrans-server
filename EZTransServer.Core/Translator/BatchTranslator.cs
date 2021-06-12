@@ -9,7 +9,7 @@ namespace EZTransServer.Core.Translator
     /// <summary>
     /// It merge or split translation works for single threaded translator.
     /// </summary>
-    class BatchTranslator : ITranslator
+    public class BatchTranslator : ITranslator
     {
         private class Work
         {
