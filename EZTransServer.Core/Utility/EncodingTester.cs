@@ -4,20 +4,20 @@ namespace EZTransServer.Core.Utility
 {
     internal class EncodingTester
     {
-        private readonly Encoder Encode;
-        private readonly char[] Chars = new char[1];
-        private readonly byte[] Bytes = new byte[8];
+        private readonly Encoder _encode;
+        private readonly char[] _chars = new char[1];
+        private readonly byte[] _bytes = new byte[8];
 
         public EncodingTester(int codepage)
         {
-            Encode = TextUtility.GetSOHFallbackEncoding(codepage).GetEncoder();
+            _encode = TextUtility.GetSOHFallbackEncoding(codepage).GetEncoder();
         }
 
         public bool IsEncodable(char ch)
         {
-            Chars[0] = ch;
-            Encode.Convert(Chars, 0, 1, Bytes, 0, 8, false, out _, out _, out _);
-            return Chars[0] != '\x01';
+            _chars[0] = ch;
+            _encode.Convert(_chars, 0, 1, _bytes, 0, 8, false, out _, out _, out _);
+            return _bytes[0] != '\x01';
         }
     }
 }
