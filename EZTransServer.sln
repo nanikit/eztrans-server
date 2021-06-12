@@ -1,16 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.29721.120
+VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eztrans-server", "eztrans-server\eztrans-server.csproj", "{6F52E4C0-3DB8-4B08-ADFF-D5E033B8B9E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZTransServer.Core", "EZTransServer.Core\EZTransServer.Core.csproj", "{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9829E628-FA96-44AB-BAB5-6E7503ACE944}"
-	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZTransServer.Core", "EZTransServer.Core\EZTransServer.Core.csproj", "{925F8BF5-3B6A-44E8-AD5C-155C86DF1530}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZTransServer.Terminal", "EZTransServer.Terminal\EZTransServer.Terminal.csproj", "{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,19 +13,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6F52E4C0-3DB8-4B08-ADFF-D5E033B8B9E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F52E4C0-3DB8-4B08-ADFF-D5E033B8B9E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F52E4C0-3DB8-4B08-ADFF-D5E033B8B9E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F52E4C0-3DB8-4B08-ADFF-D5E033B8B9E6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{925F8BF5-3B6A-44E8-AD5C-155C86DF1530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{925F8BF5-3B6A-44E8-AD5C-155C86DF1530}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{925F8BF5-3B6A-44E8-AD5C-155C86DF1530}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{925F8BF5-3B6A-44E8-AD5C-155C86DF1530}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2C3E844B-6F14-4D2E-A2EF-6C9581EDD542}
+		SolutionGuid = {BFFBCBCB-A694-4F34-AA0B-A5A5AEABB2EA}
 	EndGlobalSection
 EndGlobal
