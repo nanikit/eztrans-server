@@ -8,40 +8,58 @@ namespace EZTransServer.Core.Http
 {
     public class TranslatorServerProvider : IDisposable
     {
+        private readonly ITranslator _translator;
+        private readonly HttpListener _listener = new HttpListener();
+        private TaskCompletionSource<bool> _cancellationSource = new TaskCompletionSource<bool>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public event Action<IPEndPoint, string?>? OnRequest;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public Task? Server { get; private set; }
 
-        private readonly ITranslator Translator;
-        private readonly HttpListener Listener = new HttpListener();
-        private TaskCompletionSource<bool> CancellationSource = new TaskCompletionSource<bool>();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="translator"></param>
         public TranslatorServerProvider(ITranslator translator)
         {
-            Translator = translator;
+            _translator = translator;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <returns></returns>
         public Task Run(Uri endpoint)
         {
-            Listener.Prefixes.Clear();
-            Listener.Prefixes.Add(GetOrigin(endpoint));
-            Listener.Start();
+            _listener.Prefixes.Clear();
+            _listener.Prefixes.Add(GetOrigin(endpoint));
+            _listener.Start();
 
             Server = HandleIncomingConnections(endpoint.AbsolutePath);
             return Server;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Dispose()
         {
-            CancellationSource.TrySetResult(false);
+            _cancellationSource.TrySetResult(false);
         }
 
         private async Task HandleIncomingConnections(string listenPath)
         {
-            using (Listener)
+            using (_listener)
             {
                 while (await AcceptRequest(listenPath).ConfigureAwait(false)) ;
-                Listener.Close();
+                _listener.Close();
             }
         }
 
@@ -51,8 +69,10 @@ namespace EZTransServer.Core.Http
             {
                 return false;
             }
-            Task<HttpListenerContext> listening = Listener.GetContextAsync();
-            await Task.WhenAny(listening, CancellationSource.Task).ConfigureAwait(false);
+
+            Task<HttpListenerContext> listening = _listener.GetContextAsync();
+            await Task.WhenAny(listening, _cancellationSource.Task).ConfigureAwait(false);
+
             if (IsCancelled())
             {
                 return false;
@@ -81,20 +101,20 @@ namespace EZTransServer.Core.Http
 
         private bool IsCancelled()
         {
-            var task = CancellationSource.Task;
+            var task = _cancellationSource.Task;
             return task.IsCompleted || task.IsCanceled || task.IsFaulted;
         }
 
         private async Task ProcessTranslation(HttpListenerRequest req, HttpListenerResponse resp)
         {
-            string? japanese = GetTextParam(req);
-            OnRequest?.Invoke(req.RemoteEndPoint, japanese);
-            if (japanese == null)
+            string? originalText = GetTextParam(req);
+            OnRequest?.Invoke(req.RemoteEndPoint, originalText);
+            if (originalText == null)
             {
                 return;
             }
 
-            string? korean = await Translator.Translate(japanese ?? "").ConfigureAwait(false);
+            string? korean = await _translator.Translate(originalText ?? "").ConfigureAwait(false);
 
             resp.ContentType = "text/plain; charset=utf-8";
             byte[] buf = Encoding.UTF8.GetBytes(korean);

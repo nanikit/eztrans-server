@@ -16,7 +16,6 @@ namespace EZTransServer.Core.Utility
     /// </remarks>
     internal class EscapeProcessor
     {
-
         enum EscapeKind
         {
             None,
@@ -24,10 +23,9 @@ namespace EZTransServer.Core.Utility
             Space
         }
 
-        private static readonly string Escaper = "[;:}";
-        private static readonly EncodingTester Sjis = new EncodingTester(932);
-        private static readonly Regex RxDecode =
-          new Regex(@"(\r\n)|(\[;:})|[\r\[]|[^\r\[]+", RegexOptions.Compiled);
+        private static readonly string _escaper = "[;:}";
+        private static readonly EncodingTester _sjis = new EncodingTester(932);
+        private static readonly Regex _regexDecode = new Regex(@"(\r\n)|(\[;:})|[\r\[]|[^\r\[]+", RegexOptions.Compiled);
 
         /// <summary>
         /// Filter characters which can be modified if repeated.
@@ -44,7 +42,7 @@ namespace EZTransServer.Core.Utility
         {
             return c == '@' // Hdor escape character
               || c == '-' // It may be changed to ―
-              || !Sjis.IsEncodable(c);
+              || !_sjis.IsEncodable(c);
         }
 
 
@@ -68,7 +66,7 @@ namespace EZTransServer.Core.Utility
                 {
                     SetEscapingKind(EscapeKind.None);
                     preserveds.Add(c.ToString());
-                    buffer.Append(Escaper);
+                    buffer.Append(_escaper);
                 }
                 else
                 {
@@ -85,7 +83,7 @@ namespace EZTransServer.Core.Utility
             buffer.Clear();
 
             List<string>.Enumerator hydrate = preserveds.GetEnumerator();
-            foreach (Match m in RxDecode.Matches(escaped))
+            foreach (Match m in _regexDecode.Matches(escaped))
             {
                 if (m.Groups[1].Success || m.Groups[2].Success)
                 {
@@ -151,7 +149,7 @@ namespace EZTransServer.Core.Utility
             }
             else
             {
-                buffer.Append(Escaper);
+                buffer.Append(_escaper);
                 preserveds.Add(space);
             }
         }

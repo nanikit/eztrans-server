@@ -24,27 +24,27 @@ namespace EZTransServer.Core.Translator
             }
         }
 
-        private readonly Task Worker;
-        private readonly ITranslator Translator;
-        private readonly ConcurrentBuffer<Work> Works = new ConcurrentBuffer<Work>();
-        private readonly CancellationTokenSource Cancellation = new CancellationTokenSource();
+        private readonly Task _worker;
+        private readonly ITranslator _translator;
+        private readonly ConcurrentBuffer<Work> _works = new ConcurrentBuffer<Work>();
+        private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
 
         public BatchTranslator(ITranslator translator)
         {
-            Translator = translator;
-            Worker = ProcessQueue();
+            _translator = translator;
+            _worker = ProcessQueue();
         }
 
         public Task<string?> Translate(string source)
         {
             var work = new Work(source);
-            Works.Enqueue(work);
+            _works.Enqueue(work);
             return work.Client.Task;
         }
 
         public async Task ProcessQueue()
         {
-            CancellationToken token = Cancellation.Token;
+            CancellationToken token = _cancellation.Token;
             while (!token.IsCancellationRequested)
             {
                 List<Work> works = await GetWorksOfThisRound(token).ConfigureAwait(false);
@@ -52,7 +52,7 @@ namespace EZTransServer.Core.Translator
                 IEnumerable<string> texts = works.Select(x => x.Text);
                 string mergedStart = string.Join("\n", texts);
                 System.Diagnostics.Debug.WriteLine($"[[[{mergedStart}]]]");
-                string mergedEnd = await Translator.Translate(mergedStart).ConfigureAwait(false) ?? "";
+                string mergedEnd = await _translator.Translate(mergedStart).ConfigureAwait(false) ?? "";
 
                 string[] translateds = SplitBySegmentNewline(mergedEnd, texts).ToArray();
 
@@ -96,18 +96,18 @@ namespace EZTransServer.Core.Translator
             var works = new List<Work>();
             do
             {
-                Work work = await Works.ReceiveAsync(token).ConfigureAwait(false);
+                Work work = await _works.ReceiveAsync(token).ConfigureAwait(false);
                 works.Add(work);
             }
-            while (Works.PendingSize > 0);
+            while (_works.PendingSize > 0);
             return works;
         }
 
         public void Dispose()
         {
-            Cancellation.Cancel();
-            Cancellation.Dispose();
-            Translator.Dispose();
+            _cancellation.Cancel();
+            _cancellation.Dispose();
+            _translator.Dispose();
         }
     }
 }

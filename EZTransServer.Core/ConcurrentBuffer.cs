@@ -19,12 +19,12 @@ namespace EZTransServer.Core
             }
         }
 
-        private readonly ConcurrentQueue<T> DataQueue = new ConcurrentQueue<T>();
-        private readonly ConcurrentQueue<Client> Clients = new ConcurrentQueue<Client>();
+        private readonly ConcurrentQueue<T> _dataQueue = new ConcurrentQueue<T>();
+        private readonly ConcurrentQueue<Client> _clients = new ConcurrentQueue<Client>();
 
-        public int PendingSize => DataQueue.Count;
+        public int PendingSize => _dataQueue.Count;
 
-        public int HungerSize => Clients.Count;
+        public int HungerSize => _clients.Count;
 
         public Task<T> ReceiveAsync()
         {
@@ -33,21 +33,21 @@ namespace EZTransServer.Core
 
         public Task<T> ReceiveAsync(CancellationToken token)
         {
-            if (DataQueue.TryDequeue(out T res))
+            if (_dataQueue.TryDequeue(out T res))
             {
                 return Task.FromResult(res);
             }
             else
             {
                 var client = new Client(token);
-                Clients.Enqueue(client);
+                _clients.Enqueue(client);
                 return client.Waiting.Task;
             }
         }
 
         public void Enqueue(T value)
         {
-            while (Clients.TryDequeue(out Client client))
+            while (_clients.TryDequeue(out Client client))
             {
                 client.Cancelling.Dispose();
                 if (client.Waiting.TrySetResult(value))
@@ -55,12 +55,12 @@ namespace EZTransServer.Core
                     return;
                 }
             }
-            DataQueue.Enqueue(value);
+            _dataQueue.Enqueue(value);
         }
 
         public void Abort()
         {
-            while (Clients.TryDequeue(out Client client))
+            while (_clients.TryDequeue(out Client client))
             {
                 client.Cancelling.Dispose();
                 client.Waiting.TrySetCanceled();

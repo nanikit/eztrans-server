@@ -11,13 +11,13 @@ namespace EZTransServer.Core.Utility
     {
         public int Position { get; private set; }
 
-        private readonly TextReader Base;
-        private char[] Buffer;
+        private readonly TextReader _base;
+        private char[] _buffer;
 
         public CharBufferReader(TextReader reader, char[]? buffer = null)
         {
-            Base = reader;
-            Buffer = buffer ?? new char[2048];
+            _base = reader;
+            _buffer = buffer ?? new char[2048];
         }
 
         public int TextCopyTo(TextWriter destination, int length)
@@ -25,12 +25,12 @@ namespace EZTransServer.Core.Utility
             int remain = length;
             while (remain > 0)
             {
-                int read = Base.ReadBlock(Buffer, 0, Math.Min(remain, Buffer.Length));
+                int read = _base.ReadBlock(_buffer, 0, Math.Min(remain, _buffer.Length));
                 if (read <= 0)
                 {
                     break;
                 }
-                destination.Write(Buffer, 0, read);
+                destination.Write(_buffer, 0, read);
                 remain -= read;
             }
 
@@ -41,15 +41,15 @@ namespace EZTransServer.Core.Utility
 
         public string? ReadString(int length)
         {
-            if (Buffer.Length < length)
+            if (_buffer.Length < length)
             {
-                Buffer = new char[length];
+                _buffer = new char[length];
             }
 
-            int read = Base.ReadBlock(Buffer, 0, length);
+            int read = _base.ReadBlock(_buffer, 0, length);
             Position += read;
 
-            return read == length ? new string(Buffer, 0, length) : null;
+            return read == length ? new string(_buffer, 0, length) : null;
         }
     }
 }
