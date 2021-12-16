@@ -1,4 +1,4 @@
-﻿using EZTransServer.Core.Utility;
+﻿using EztransServer.Core.Utility;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -7,12 +7,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace EZTransServer.Core.Translator
+namespace EztransServer.Core.Translator
 {
     /// <summary>
     /// It provides an EZTransXP japanese to korean translator.
     /// </summary>
-    public class EZTransXPTranslator : ITranslator
+    public class EztransXpTranslator : ITranslator
     {
         #region ::PInvokes::
 
@@ -31,7 +31,7 @@ namespace EZTransServer.Core.Translator
         private readonly J2K_FreeMem J2kFree;
         private readonly J2K_TranslateMMNTW J2kMmntw;
 
-        private EZTransXPTranslator(IntPtr eztransDll)
+        private EztransXpTranslator(IntPtr eztransDll)
         {
             J2kMmntw = GetFuncAddress<J2K_TranslateMMNTW>(eztransDll, "J2K_TranslateMMNTW");
             J2kFree = GetFuncAddress<J2K_FreeMem>(eztransDll, "J2K_FreeMem");
@@ -43,7 +43,7 @@ namespace EZTransServer.Core.Translator
         /// <param name="eztPath">Path of EZTransXP.</param>
         /// <param name="msDelay">Delay for loading library.</param>
         /// <returns>Task result</returns>
-        public static async Task<EZTransXPTranslator> Create(string? eztPath = null, int msDelay = 200)
+        public static async Task<EztransXpTranslator> Create(string? eztPath = null, int msDelay = 200)
         {
             var exceptions = new Dictionary<string, Exception>();
             foreach (string path in GetEztransDirs(eztPath))
@@ -55,7 +55,7 @@ namespace EZTransServer.Core.Translator
                 try
                 {
                     IntPtr eztransDll = await LoadNativeDll(path, msDelay).ConfigureAwait(false);
-                    return new EZTransXPTranslator(eztransDll);
+                    return new EztransXpTranslator(eztransDll);
                 }
                 catch (Exception e)
                 {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace EZTransServer.Core.Utility
+namespace EztransServer.Core.Utility
 {
     internal static class TextUtility
     {

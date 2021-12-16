@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 
-namespace EZTransServer.Core
+namespace EztransServer.Core
 {
     /// <summary>
     /// It provides compatibility check.

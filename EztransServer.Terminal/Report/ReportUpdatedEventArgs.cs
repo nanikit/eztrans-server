@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EZTransServer.Terminal.Report
+namespace EztransServer.Terminal.Report
 {
     /// <summary>
     /// The class that store the Report Updated Event arguments.

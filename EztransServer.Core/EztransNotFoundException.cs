@@ -1,4 +1,4 @@
-﻿namespace EZTransServer.Core
+﻿namespace EztransServer.Core
 {
     public class EztransNotFoundException : EztransException
     {

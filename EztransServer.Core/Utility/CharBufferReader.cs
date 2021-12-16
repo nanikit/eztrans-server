@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace EZTransServer.Core.Utility
+namespace EztransServer.Core.Utility
 {
     internal class CharBufferReader
     {

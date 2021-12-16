@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EZTransServer.Core
+namespace EztransServer.Core
 {
     public class EztransException : Exception
     {

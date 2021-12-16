@@ -1,10 +1,10 @@
-﻿using EZTransServer.Core.Translator;
+﻿using EztransServer.Core.Translator;
 using System;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EZTransServer.Core.Http
+namespace EztransServer.Core.Http
 {
     /// <summary>
     /// It provides a translator server.

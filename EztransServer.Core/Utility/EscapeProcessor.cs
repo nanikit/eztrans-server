@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace EZTransServer.Core.Utility
+namespace EztransServer.Core.Utility
 {
     /// <summary>
     /// Eztrans trims the string, so pre/post process are required to preserve spaces.

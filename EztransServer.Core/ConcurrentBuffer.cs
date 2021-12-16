@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EZTransServer.Core
+namespace EztransServer.Core
 {
     internal class ConcurrentBuffer<T>
     {

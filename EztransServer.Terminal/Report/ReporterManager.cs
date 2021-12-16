@@ -1,9 +1,9 @@
-﻿using EZTransServer.Terminal.Utility;
+﻿using EztransServer.Terminal.Utility;
 using System;
 using System.IO;
 using System.Text;
 
-namespace EZTransServer.Terminal.Report
+namespace EztransServer.Terminal.Report
 {
     internal class ReporterManager
     {

@@ -1,7 +1,7 @@
-﻿using EZTransServer.Core;
-using EZTransServer.Core.Http;
-using EZTransServer.Core.Translator;
-using EZTransServer.Terminal.Report;
+﻿using EztransServer.Core;
+using EztransServer.Core.Http;
+using EztransServer.Core.Translator;
+using EztransServer.Terminal.Report;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -9,7 +9,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace EZTransServer.Terminal
+namespace EztransServer.Terminal
 {
     class Program
     {
@@ -120,7 +120,7 @@ namespace EZTransServer.Terminal
                 }
 
                 _requestCount = 0;
-                ITranslator translator = await EZTransXPTranslator.Create(eztPath: _eztransPath, msDelay: _loadDelay).ConfigureAwait(false);
+                ITranslator translator = await EztransXpTranslator.Create(eztPath: _eztransPath, msDelay: _loadDelay).ConfigureAwait(false);
                 translator = new BatchTranslator(translator);
                 _translatorServer = new TranslatorServerProvider(translator);
                 _translatorServer.OnRequest += OnRequest;

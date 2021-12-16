@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
-    <AssemblyName>EZTransServer</AssemblyName>
+    <AssemblyName>EztransServer</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EZTransServer.Core\EZTransServer.Core.csproj" />
+    <ProjectReference Include="..\EztransServer.Core\EztransServer.Core.csproj" />
   </ItemGroup>
 
 </Project>

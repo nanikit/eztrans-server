@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace EZTransServer.Terminal.Utility
+namespace EztransServer.Terminal.Utility
 {
     /// <summary>
     /// Provides functions related to file I/O.

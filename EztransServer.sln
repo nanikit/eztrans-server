@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZTransServer.Core", "EZTransServer.Core\EZTransServer.Core.csproj", "{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EztransServer.Core", "EztransServer.Core\EztransServer.Core.csproj", "{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZTransServer.Terminal", "EZTransServer.Terminal\EZTransServer.Terminal.csproj", "{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EztransServer.Terminal", "EztransServer.Terminal\EztransServer.Terminal.csproj", "{DFF3F10A-D364-4F6F-B124-C3A9FDA21EFE}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA} = {B089A8B5-0B78-4B97-8C2B-1243DDB4B7BA}
 	EndProjectSection

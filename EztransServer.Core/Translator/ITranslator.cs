@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace EZTransServer.Core.Translator
+namespace EztransServer.Core.Translator
 {
     /// <summary>
     /// The interface to provide translator.

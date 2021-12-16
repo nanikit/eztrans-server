@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace EZTransServer.Core.Utility
+namespace EztransServer.Core.Utility
 {
     internal class StringWithCodePage
     {
