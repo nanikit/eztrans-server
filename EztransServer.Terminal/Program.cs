@@ -18,25 +18,15 @@ namespace EztransServer.Terminal {
 
     private static string _eztransPath;
     private static string _origin;
-    private static int _loadDelay;
 
-    private static TranslatorServerProvider? _translatorServer;
+    private static TranslationServer? _translatorServer;
     private static int _requestCount;
 
     static async Task Main(string[] args) {
       Console.Title = _title;
       Console.WriteLine(_intoduction);
-
-      bool isCompatible = Compatibility.IsCompatible();
-
-      if (isCompatible) {
-        if (InitializeReportManager() && InitializeArguments(args)) {
-          Compatibility.RegisterCodePages();
-          await InitializeServer();
-        }
-      }
-      else {
-        Console.WriteLine("Application started on an unsupported platform. This application only supports Windows.");
+      if (InitializeReportManager() && InitializeArguments(args)) {
+        await InitializeServer();
       }
     }
 
@@ -56,31 +46,27 @@ namespace EztransServer.Terminal {
 
     private static bool InitializeArguments(string[] args) {
       try {
-        Option pathOption = new Option<string>("--eztrans-path", getDefaultValue: () => @"C:\Program Files (x86)\ChangShinSoft\ezTrans XP", description: "The path of EZTransXP.");
+        Option pathOption = new Option<string>("--dll-path", getDefaultValue: () => @"C:\Program Files (x86)\ChangShinSoft\ezTrans XP\J2KEngine.dll", description: "The path of EZTransXP dll.");
         pathOption.AddAlias("-p");
 
         Option originOption = new Option<string>("--origin", getDefaultValue: () => "http://localhost:8000", description: "The origin URL which the server is used for watching requests.");
         originOption.AddAlias("-o");
 
-        Option loadDelayOption = new Option<int>("--load-delay", getDefaultValue: () => 200, description: "The delay for ignoring timeout.");
-        loadDelayOption.AddAlias("-d");
-
         // Create a root command with some options
-        var rootCommand = new RootCommand { pathOption, originOption, loadDelayOption };
+        var rootCommand = new RootCommand { pathOption, originOption };
         rootCommand.Description = "Terminal for EZTransXP Server";
 
         // Note that the parameters of the handler method are matched according to the names of the options
-        rootCommand.Handler = CommandHandler.Create<string, string, int>((eztransPath, origin, loadDelay) => {
+        rootCommand.Handler = CommandHandler.Create<string, string>((eztransPath, origin) => {
           _eztransPath = eztransPath;
           _origin = origin;
-          _loadDelay = loadDelay;
         });
 
         // Parse the incoming args and invoke the handler
         int result = rootCommand.InvokeAsync(args).Result;
 
         if (result == 0) {
-          _reporterManager.AddReport($"EZTRANS_PATH: '{_eztransPath}', ORIGIN: '{_origin}', LOAD_DELAY: {_loadDelay}");
+          _reporterManager.AddReport($"DLL_PATH: '{_eztransPath}', ORIGIN: '{_origin}'");
           _reporterManager.AddReport("Arguments are initialized.");
           return true;
         }
@@ -102,9 +88,7 @@ namespace EztransServer.Terminal {
         }
 
         _requestCount = 0;
-        ITranslator translator = await EztransXpTranslator.Create(eztPath: _eztransPath, msDelay: _loadDelay).ConfigureAwait(false);
-        translator = new BatchTranslator(translator);
-        _translatorServer = new TranslatorServerProvider(translator);
+        _translatorServer = new TranslationServer(new EhndTranslator(_eztransPath));
         _translatorServer.OnRequest += OnRequest;
 
         var uri = new Uri(_origin);

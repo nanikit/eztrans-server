@@ -81,7 +81,7 @@ namespace EztransServer.Gui {
       set => Set(ref _requestCount, value);
     }
 
-    private TranslatorServerProvider? _translatorServer;
+    private TranslationServer? _translatorServer;
 
     public HttpServerVM() {
       RestartCommand = new RelayCommand(() => _ = Restart());
@@ -95,9 +95,8 @@ namespace EztransServer.Gui {
         }
 
         RequestCount = 0;
-        ITranslator translator = await EztransXpTranslator.Create().ConfigureAwait(false);
-        translator = new BatchTranslator(translator);
-        _translatorServer = new TranslatorServerProvider(translator);
+        var translator = new EhndTranslator();
+        _translatorServer = new TranslationServer(translator);
         _translatorServer.OnRequest += OnRequest;
 
         var uri = new Uri(_origin);

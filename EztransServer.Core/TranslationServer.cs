@@ -8,10 +8,10 @@ namespace EztransServer.Core.Http {
   /// <summary>
   /// It provides a translator server.
   /// </summary>
-  public class TranslatorServerProvider : IDisposable {
+  public class TranslationServer : IDisposable {
     private readonly ITranslator _translator;
-    private readonly HttpListener _listener = new HttpListener();
-    private TaskCompletionSource<bool> _cancellationSource = new TaskCompletionSource<bool>();
+    private readonly HttpListener _listener = new();
+    private readonly TaskCompletionSource<bool> _cancellationSource = new();
 
     /// <summary>
     /// An event that occurs when a new request is made.
@@ -27,7 +27,7 @@ namespace EztransServer.Core.Http {
     /// Create a new translator server provider instance.
     /// </summary>
     /// <param name="translator">Translator provider to use.</param>
-    public TranslatorServerProvider(ITranslator translator) {
+    public TranslationServer(ITranslator translator) {
       _translator = translator;
     }
 
@@ -123,7 +123,7 @@ namespace EztransServer.Core.Http {
         return null;
       }
 
-      string query = req.Url.Query.Substring(1);
+      string query = req.Url.Query[1..];
       foreach (string keyVal in query.Split('&')) {
         string[] pair = keyVal.Split(paramDelimiter, 2);
         if (pair.Length > 1 && pair[0] == "text") {
@@ -139,7 +139,7 @@ namespace EztransServer.Core.Http {
     private static string GetOrigin(Uri endpoint) {
       string url = endpoint.AbsoluteUri;
       int idxAfterPath = url.Length - endpoint.PathAndQuery.Length + 1;
-      string origin = url.Substring(0, Math.Max(0, idxAfterPath));
+      string origin = url[..Math.Max(0, idxAfterPath)];
       return origin;
     }
   }
