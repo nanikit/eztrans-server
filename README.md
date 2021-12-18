@@ -17,11 +17,15 @@ Endpoint=CustomTranslate
 [Custom]
 Url=http://localhost:8000/
 ```
-4. [eztrans-server.exe](https://github.com/nanikit/eztrans-server/releases)를 받아 실행합니다.
+4. [EztransServer.Gui.exe](https://github.com/nanikit/eztrans-server/releases)를 받아 실행합니다.
 5. 게임을 실행합니다.
 
 
 ## 증상 대처법
+- To run this application, you must install .NET 메시지가 뜹니다.
+
+[32비트용 .NET 5](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-5.0.13-windows-x86-installer)를 설치하고 다시 시도해주세요. 64비트는 통하지 않습니다.
+
 - 이지트랜스를 찾을 수 없습니다
 
 이지트랜스를 시험삼아 한번 실행해보세요.

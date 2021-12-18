@@ -13,6 +13,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BB5A837F-C03C-4EA3-BFA7-1965DFF3E28F}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		CHANGELOG.md = CHANGELOG.md
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EztransServer.Gui", "EztransServer.Gui\EztransServer.Gui.csproj", "{05835A10-CA4E-46E2-B507-F7F6B21731FE}"
