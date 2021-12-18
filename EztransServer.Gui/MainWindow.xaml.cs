@@ -22,14 +22,14 @@ namespace EztransServer.Gui {
       DataContext = vm;
       InitializeComponent();
 
-      PrintProgramVersion(vm);
+      PrintProgramVersion();
       vm.Logs.CollectionChanged += LogVmItem;
       _ = vm.Restart();
     }
 
-    private void LogVmItem(object sender, NotifyCollectionChangedEventArgs e) {
+    private void LogVmItem(object? sender, NotifyCollectionChangedEventArgs e) {
       if (e.Action == NotifyCollectionChangedAction.Add) {
-        Log(e.NewItems[0] as string ?? "");
+        Log(e.NewItems?[0] as string ?? "");
       }
     }
 
@@ -50,7 +50,7 @@ namespace EztransServer.Gui {
       }
     }
 
-    private void PrintProgramVersion(HttpServerVM vm) {
+    private void PrintProgramVersion() {
       string build = Properties.Resources.BuildDate;
       string date = $"{build.Substring(2, 2)}{build.Substring(5, 2)}{build.Substring(8, 2)}";
       TbLog.Document.Blocks.Clear();
@@ -124,7 +124,7 @@ namespace EztransServer.Gui {
     private void SetOriginFromCommandLine() {
       string[] args = Environment.GetCommandLineArgs();
       if (args.Length >= 2) {
-        LogIfThrown(() => {
+        LogIfThrow(() => {
           var uri = new Uri(args[1]);
           Origin = uri.AbsoluteUri;
         });
@@ -132,11 +132,11 @@ namespace EztransServer.Gui {
     }
 
     private void RunSelfAsAdmin() {
-      LogIfThrown(() => {
-        Process p = new Process();
+      LogIfThrow(() => {
+        Process p = new();
         p.StartInfo.Verb = "runas";
         p.StartInfo.UseShellExecute = true;
-        p.StartInfo.FileName = System.Reflection.Assembly.GetEntryAssembly().Location;
+        p.StartInfo.FileName = System.Reflection.Assembly.GetEntryAssembly()!.Location;
         p.StartInfo.Arguments = Origin;
         p.Start();
 
@@ -146,7 +146,7 @@ namespace EztransServer.Gui {
       });
     }
 
-    private void LogIfThrown(Action action) {
+    private void LogIfThrow(Action action) {
       try {
         action();
       }
@@ -157,7 +157,7 @@ namespace EztransServer.Gui {
 
     private void OnRequest(IPEndPoint ip, string? req) {
       string datetime = $"{DateTime.Now:[MM-dd HH:mm:ss]}";
-      string head = req?.Substring(0, Math.Min(40, req.Length)) ?? "";
+      string head = req?[..Math.Min(40, req.Length)] ?? "";
       string log = $"{datetime} {ip.Address}: {head}";
 
       Application.Current.Dispatcher.InvokeAsync(() => {

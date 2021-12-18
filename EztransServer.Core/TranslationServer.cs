@@ -50,6 +50,7 @@ namespace EztransServer.Core.Http {
     /// </summary>
     public void Dispose() {
       _cancellationSource.TrySetResult(false);
+      GC.SuppressFinalize(this);
     }
 
     private async Task HandleIncomingConnections(string listenPath) {
@@ -123,7 +124,7 @@ namespace EztransServer.Core.Http {
         return null;
       }
 
-      string query = req.Url.Query[1..];
+      string query = req.Url!.Query[1..];
       foreach (string keyVal in query.Split('&')) {
         string[] pair = keyVal.Split(paramDelimiter, 2);
         if (pair.Length > 1 && pair[0] == "text") {
