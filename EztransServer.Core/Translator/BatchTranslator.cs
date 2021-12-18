@@ -1,4 +1,5 @@
 ﻿using EztransServer.Core.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -55,13 +56,20 @@ namespace EztransServer.Core.Translator {
 
         IEnumerable<string> texts = works.Select(x => x.Text);
         string mergedStart = string.Join("\n", texts);
-        System.Diagnostics.Debug.WriteLine($"[[[{mergedStart}]]]");
-        string mergedEnd = await _translator.Translate(mergedStart).ConfigureAwait(false) ?? "";
 
-        string[] translateds = SplitBySegmentNewline(mergedEnd, texts).ToArray();
+        try {
+          string mergedEnd = await _translator.Translate(mergedStart).ConfigureAwait(false) ?? "";
 
-        for (int i = 0; i < works.Count; i++) {
-          works[i].Client.TrySetResult(translateds[i]);
+          string[] translateds = SplitBySegmentNewline(mergedEnd, texts).ToArray();
+
+          for (int i = 0; i < works.Count; i++) {
+            works[i].Client.TrySetResult(translateds[i]);
+          }
+        }
+        catch (Exception exception) {
+          for (int i = 0; i < works.Count; i++) {
+            works[i].Client.TrySetException(exception);
+          }
         }
       }
     }

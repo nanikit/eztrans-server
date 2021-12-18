@@ -94,18 +94,26 @@ namespace EztransServer.Core.Http {
       return task.IsCompleted || task.IsCanceled || task.IsFaulted;
     }
 
-    private async Task ProcessTranslation(HttpListenerRequest req, HttpListenerResponse resp) {
-      string? originalText = GetTextParam(req);
-      OnRequest?.Invoke(req.RemoteEndPoint, originalText);
+    private async Task ProcessTranslation(HttpListenerRequest request, HttpListenerResponse response) {
+      string? originalText = GetTextParam(request);
+      OnRequest?.Invoke(request.RemoteEndPoint, originalText);
       if (originalText == null) {
         return;
       }
 
-      string? translatedText = await _translator.Translate(originalText ?? "").ConfigureAwait(false);
-      resp.ContentType = "text/plain; charset=utf-8";
-      byte[] buf = Encoding.UTF8.GetBytes(translatedText);
-      resp.ContentLength64 = buf.LongLength;
-      await resp.OutputStream.WriteAsync(buf, 0, buf.Length);
+      byte[] body;
+      try {
+        string translated = await _translator.Translate(originalText ?? "").ConfigureAwait(false);
+        body = Encoding.UTF8.GetBytes(translated);
+      }
+      catch (Exception exception) {
+        response.StatusCode = 500;
+        body = Encoding.UTF8.GetBytes($"Internal server error: {exception.Message}");
+      }
+
+      response.ContentType = "text/plain; charset=utf-8";
+      response.ContentLength64 = body.LongLength;
+      await response.OutputStream.WriteAsync(body);
     }
 
     private readonly static char[] paramDelimiter = new char[] { '=' };
