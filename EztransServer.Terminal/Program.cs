@@ -1,4 +1,4 @@
-﻿using EztransServer.Core;
+using EztransServer.Core;
 using EztransServer.Core.Http;
 using EztransServer.Core.Translator;
 using EztransServer.Terminal.Report;

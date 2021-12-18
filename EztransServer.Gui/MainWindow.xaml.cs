@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using EztransServer.Core.Http;
 using EztransServer.Core.Translator;
 using System;

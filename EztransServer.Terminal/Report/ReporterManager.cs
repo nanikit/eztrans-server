@@ -1,4 +1,4 @@
-﻿using EztransServer.Terminal.Utility;
+using EztransServer.Terminal.Utility;
 using System;
 using System.IO;
 using System.Text;

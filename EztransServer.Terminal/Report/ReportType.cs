@@ -1,4 +1,4 @@
-﻿namespace EztransServer.Terminal.Report {
+namespace EztransServer.Terminal.Report {
   /// <summary>
   /// Report types.
   /// </summary>

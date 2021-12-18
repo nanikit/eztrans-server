@@ -1,4 +1,4 @@
-﻿using Nanikit.Ehnd;
+using Nanikit.Ehnd;
 using System;
 using System.Threading.Tasks;
 

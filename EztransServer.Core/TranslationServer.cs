@@ -1,4 +1,4 @@
-﻿using EztransServer.Core.Translator;
+using EztransServer.Core.Translator;
 using System;
 using System.Net;
 using System.Text;
