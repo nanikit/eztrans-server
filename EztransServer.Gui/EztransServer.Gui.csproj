@@ -28,4 +28,8 @@
     </None>
   </ItemGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="date /t &gt; $(ProjectDir)\Properties\BuildDate.txt" />
+  </Target>
+
 </Project>
