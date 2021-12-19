@@ -55,7 +55,7 @@ namespace EztransServer.Gui {
       string build = Properties.Resources.BuildDate;
       string date = $"{build.Substring(2, 2)}{build.Substring(5, 2)}{build.Substring(8, 2)}";
       TbLog.Document.Blocks.Clear();
-      Log($"eztrans-server v{date} by nanikit");
+      Log($"eztrans-server v{date}");
     }
   }
 
