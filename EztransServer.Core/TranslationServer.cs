@@ -9,14 +9,43 @@ namespace EztransServer.Core.Http {
   /// It provides a translator server.
   /// </summary>
   public class TranslationServer : IDisposable {
-    private readonly ITranslator _translator;
-    private readonly HttpListener _listener = new();
-    private readonly TaskCompletionSource<bool> _cancellationSource = new();
+
+    private readonly static char[] paramDelimiter = new char[] { '=' };
+
+    private static string? GetTextParam(HttpListenerRequest req) {
+      if (req.Url?.Query.Length < 1) {
+        return null;
+      }
+
+      string query = req.Url!.Query[1..];
+      foreach (string keyVal in query.Split('&')) {
+        string[] pair = keyVal.Split(paramDelimiter, 2);
+        if (pair.Length > 1 && pair[0] == "text") {
+          string unplused = pair[1].Replace('+', ' ');
+          string unescaped = Uri.UnescapeDataString(unplused);
+          return unescaped;
+        }
+      }
+
+      return null;
+    }
+
+    private static string GetOrigin(Uri endpoint) {
+      string url = endpoint.AbsoluteUri;
+      int idxAfterPath = url.Length - endpoint.PathAndQuery.Length + 1;
+      string origin = url[..Math.Max(0, idxAfterPath)];
+      return origin;
+    }
 
     /// <summary>
-    /// An event that occurs when a new request is made.
+    /// When receiving http request.
     /// </summary>
-    public event Action<IPEndPoint, string?>? OnRequest;
+    public event Action<IPEndPoint, string?> OnRequest = delegate { };
+
+    /// <summary>
+    /// When ITranslator throws.
+    /// </summary>
+    public event Action<string, Exception> OnException = delegate { };
 
     /// <summary>
     /// Asynchronous task for processing requests.
@@ -53,6 +82,10 @@ namespace EztransServer.Core.Http {
       GC.SuppressFinalize(this);
     }
 
+    private readonly ITranslator _translator;
+    private readonly HttpListener _listener = new();
+    private readonly TaskCompletionSource<bool> _cancellationSource = new();
+
     private async Task HandleIncomingConnections(string listenPath) {
       using (_listener) {
         while (await AcceptRequest(listenPath).ConfigureAwait(false)) ;
@@ -79,14 +112,14 @@ namespace EztransServer.Core.Http {
     private async Task SendResponse(string listenPath, Task<HttpListenerContext> listening) {
       HttpListenerContext ctx = await listening.ConfigureAwait(false);
 
-      HttpListenerRequest req = ctx.Request;
-      using HttpListenerResponse resp = ctx.Response;
+      HttpListenerRequest request = ctx.Request;
+      using HttpListenerResponse repsonse = ctx.Response;
 
-      if (req.Url?.LocalPath == listenPath) {
-        await ProcessTranslation(req, resp).ConfigureAwait(false);
+      if (request.Url?.LocalPath == listenPath) {
+        await ProcessTranslation(request, repsonse).ConfigureAwait(false);
       }
-      if (req.Url?.LocalPath == "/favicon.ico") {
-        resp.AddHeader("Cache-Control", "Max-Age=99999");
+      else if (request.Url?.LocalPath == "/favicon.ico") {
+        repsonse.AddHeader("Cache-Control", "Max-Age=99999");
       }
     }
 
@@ -97,7 +130,7 @@ namespace EztransServer.Core.Http {
 
     private async Task ProcessTranslation(HttpListenerRequest request, HttpListenerResponse response) {
       string? originalText = GetTextParam(request);
-      OnRequest?.Invoke(request.RemoteEndPoint, originalText);
+      OnRequest(request.RemoteEndPoint, originalText);
       if (originalText == null) {
         return;
       }
@@ -108,40 +141,14 @@ namespace EztransServer.Core.Http {
         body = Encoding.UTF8.GetBytes(translated);
       }
       catch (Exception exception) {
+        OnException(originalText, exception);
         response.StatusCode = 500;
         body = Encoding.UTF8.GetBytes($"Internal server error: {exception.Message}");
       }
 
       response.ContentType = "text/plain; charset=utf-8";
       response.ContentLength64 = body.LongLength;
-      await response.OutputStream.WriteAsync(body);
-    }
-
-    private readonly static char[] paramDelimiter = new char[] { '=' };
-
-    private static string? GetTextParam(HttpListenerRequest req) {
-      if (req.Url?.Query.Length < 1) {
-        return null;
-      }
-
-      string query = req.Url!.Query[1..];
-      foreach (string keyVal in query.Split('&')) {
-        string[] pair = keyVal.Split(paramDelimiter, 2);
-        if (pair.Length > 1 && pair[0] == "text") {
-          string unplused = pair[1].Replace('+', ' ');
-          string unescaped = Uri.UnescapeDataString(unplused);
-          return unescaped;
-        }
-      }
-
-      return null;
-    }
-
-    private static string GetOrigin(Uri endpoint) {
-      string url = endpoint.AbsoluteUri;
-      int idxAfterPath = url.Length - endpoint.PathAndQuery.Length + 1;
-      string origin = url[..Math.Max(0, idxAfterPath)];
-      return origin;
+      await response.OutputStream.WriteAsync(body).ConfigureAwait(false);
     }
   }
 }

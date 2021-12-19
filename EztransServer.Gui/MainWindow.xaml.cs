@@ -1,6 +1,7 @@
 #nullable enable
 using EztransServer.Core.Http;
 using EztransServer.Core.Translator;
+using Nanikit.Ehnd;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -81,7 +82,7 @@ namespace EztransServer.Gui {
       set => Set(ref _requestCount, value);
     }
 
-    private TranslationServer? _translatorServer;
+    private TranslationServer? _server;
 
     public HttpServerVM() {
       RestartCommand = new RelayCommand(() => _ = Restart());
@@ -90,35 +91,43 @@ namespace EztransServer.Gui {
 
     public async Task Restart() {
       try {
-        if (_translatorServer != null) {
-          _translatorServer.Dispose();
+        if (_server != null) {
+          _server.Dispose();
         }
 
         RequestCount = 0;
         var translator = new EhndTranslator();
-        _translatorServer = new TranslationServer(translator);
-        _translatorServer.OnRequest += OnRequest;
+        _server = new TranslationServer(translator);
+        _server.OnRequest += OnRequest;
+        _server.OnException += OnException;
 
         var uri = new Uri(_origin);
-        Task server = Task.Run(() => _translatorServer.Run(uri));
+        Task server = Task.Run(() => _server.Run(uri));
         Logs.Add($"서버를 시작했습니다: {uri}");
 
         await server.ConfigureAwait(false);
-        Logs.Add($"서버를 종료했습니다.");
+        Logs.Add("서버를 종료했습니다.");
       }
-      catch (HttpListenerException e) {
+      catch (HttpListenerException exception) {
         int codeAccessDenied = 5;
-        if (e.ErrorCode == codeAccessDenied) {
+        if (exception.ErrorCode == codeAccessDenied) {
           Logs.Add("외부와 연결하기 위해 관리자 권한으로 재실행합니다.");
           RunSelfAsAdmin();
         }
         else {
-          Logs.Add($"{e.Message} \r\n {e.StackTrace}");
+          Logs.Add($"{exception}");
         }
       }
-      catch (Exception e) {
-        Logs.Add($"FATAL: {e.Message} \r\n {e.StackTrace}");
+      catch (EhndNotFoundException exception) {
+        Logs.Add($"{exception.Message}\r\n{exception.Details}");
       }
+      catch (Exception exception) {
+        Logs.Add($"FATAL: {exception.Message}\r\n{exception.StackTrace}");
+      }
+    }
+
+    private void OnException(string text, Exception exception) {
+      Logs.Add($"HTTP 500 [{text}]: \r\n{exception}");
     }
 
     private void SetOriginFromCommandLine() {
