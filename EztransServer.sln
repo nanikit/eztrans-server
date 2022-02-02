@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EztransServer.Gui", "EztransServer.Gui\EztransServer.Gui.csproj", "{05835A10-CA4E-46E2-B507-F7F6B21731FE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EztransServer.Core.Test", "EztransServer.Core.Test\EztransServer.Core.Test.csproj", "{07BC989F-5B53-41ED-841E-E23BD898F6DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -36,6 +38,9 @@ Global
 		{05835A10-CA4E-46E2-B507-F7F6B21731FE}.Debug|x86.ActiveCfg = Debug|x86
 		{05835A10-CA4E-46E2-B507-F7F6B21731FE}.Debug|x86.Build.0 = Debug|x86
 		{05835A10-CA4E-46E2-B507-F7F6B21731FE}.Release|x86.ActiveCfg = Release|x86
+		{07BC989F-5B53-41ED-841E-E23BD898F6DF}.Debug|x86.ActiveCfg = Debug|x86
+		{07BC989F-5B53-41ED-841E-E23BD898F6DF}.Debug|x86.Build.0 = Debug|x86
+		{07BC989F-5B53-41ED-841E-E23BD898F6DF}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

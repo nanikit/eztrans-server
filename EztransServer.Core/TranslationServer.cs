@@ -1,5 +1,6 @@
 using EztransServer.Core.Translator;
 using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,21 +13,35 @@ namespace EztransServer.Core.Http {
 
     private readonly static char[] paramDelimiter = new char[] { '=' };
 
-    private static string? GetTextParam(HttpListenerRequest req) {
-      if (req.Url?.Query.Length < 1) {
-        return null;
-      }
+    private static async Task<string?> GetTextParam(HttpListenerRequest request) {
+      switch (request.HttpMethod) {
+      case "GET":
+        if (request.Url?.Query.Length < 1) {
+          return null;
+        }
 
-      string query = req.Url!.Query[1..];
-      foreach (string keyVal in query.Split('&')) {
-        string[] pair = keyVal.Split(paramDelimiter, 2);
-        if (pair.Length > 1 && pair[0] == "text") {
-          string unplused = pair[1].Replace('+', ' ');
-          string unescaped = Uri.UnescapeDataString(unplused);
-          return unescaped;
+        string query = request.Url!.Query[1..];
+        foreach (string keyVal in query.Split('&')) {
+          string[] pair = keyVal.Split(paramDelimiter, 2);
+          if (pair.Length > 1 && pair[0] == "text") {
+            string unplused = pair[1].Replace('+', ' ');
+            string unescaped = Uri.UnescapeDataString(unplused);
+            return unescaped;
+          }
+        }
+        return null;
+      case "POST": {
+          if (!request.HasEntityBody) {
+            return null;
+          }
+
+          using var stream = request.InputStream;
+          Encoding encoding = request.ContentEncoding;
+          using var reader = new StreamReader(stream, encoding);
+          string body = await reader.ReadToEndAsync().ConfigureAwait(false);
+          return body;
         }
       }
-
       return null;
     }
 
@@ -129,7 +144,7 @@ namespace EztransServer.Core.Http {
     }
 
     private async Task ProcessTranslation(HttpListenerRequest request, HttpListenerResponse response) {
-      string? originalText = GetTextParam(request);
+      string? originalText = await GetTextParam(request).ConfigureAwait(false);
       OnRequest(request.RemoteEndPoint, originalText);
       if (originalText == null) {
         return;
