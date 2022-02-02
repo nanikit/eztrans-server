@@ -24,7 +24,7 @@ Url=http://localhost:8000/
 ## 증상 대처법
 - To run this application, you must install .NET 메시지가 뜹니다.
 
-[32비트용 .NET 5](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-5.0.13-windows-x86-installer)를 설치하고 다시 시도해주세요. 64비트는 통하지 않습니다.
+[32비트용 .NET 6](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.1-windows-x86-installer)를 설치하고 다시 시도해주세요. 64비트는 통하지 않습니다.
 
 - 이지트랜스를 찾을 수 없습니다
 
