@@ -145,7 +145,7 @@ namespace EztransServer.Gui {
         Process p = new();
         p.StartInfo.Verb = "runas";
         p.StartInfo.UseShellExecute = true;
-        p.StartInfo.FileName = System.Reflection.Assembly.GetEntryAssembly()!.Location;
+        p.StartInfo.FileName = Environment.ProcessPath;
         p.StartInfo.Arguments = Origin;
         p.Start();
 
