@@ -113,13 +113,13 @@ namespace EztransServer.Core.Http {
       HttpListenerContext ctx = await listening.ConfigureAwait(false);
 
       HttpListenerRequest request = ctx.Request;
-      using HttpListenerResponse repsonse = ctx.Response;
+      using HttpListenerResponse response = ctx.Response;
 
       if (request.Url?.LocalPath == listenPath) {
-        await ProcessTranslation(request, repsonse).ConfigureAwait(false);
+        await ProcessTranslation(request, response).ConfigureAwait(false);
       }
       else if (request.Url?.LocalPath == "/favicon.ico") {
-        repsonse.AddHeader("Cache-Control", "Max-Age=99999");
+        response.AddHeader("Cache-Control", "Max-Age=99999");
       }
     }
 
