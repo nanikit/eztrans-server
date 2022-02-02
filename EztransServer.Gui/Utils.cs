@@ -48,11 +48,11 @@ namespace EztransServer.Gui {
     public event EventHandler? CanExecuteChanged;
 #pragma warning restore 67
 
-    public bool CanExecute(object parameter) {
+    public bool CanExecute(object? parameter) {
       return _CanExecute();
     }
 
-    public void Execute(object parameter) {
+    public void Execute(object? parameter) {
       _Execute();
     }
   }
@@ -89,7 +89,7 @@ namespace EztransServer.Gui {
     ///<returns>
     ///true if this command can be executed; otherwise, false.
     ///</returns>
-    public bool CanExecute(object parameter) {
+    public bool CanExecute(object? parameter) {
       return _CanExecute(NullToDefault(parameter));
     }
 
@@ -98,7 +98,7 @@ namespace EztransServer.Gui {
     ///</summary>
     ///<param name="parameter">Data used by the command. If the command does not
     ///require data to be passed, this object can be set to <see langword="null" />.</param>
-    public void Execute(object parameter) {
+    public void Execute(object? parameter) {
       _Execute(NullToDefault(parameter));
     }
 
@@ -122,8 +122,8 @@ namespace EztransServer.Gui {
       }
     }
 
-    private readonly ConcurrentQueue<T> DataQueue = new ConcurrentQueue<T>();
-    private readonly ConcurrentQueue<Client> Clients = new ConcurrentQueue<Client>();
+    private readonly ConcurrentQueue<T> DataQueue = new();
+    private readonly ConcurrentQueue<Client> Clients = new();
 
     public int PendingSize => DataQueue.Count;
 
@@ -134,7 +134,7 @@ namespace EztransServer.Gui {
     }
 
     public Task<T> ReceiveAsync(CancellationToken token) {
-      if (DataQueue.TryDequeue(out T res)) {
+      if (DataQueue.TryDequeue(out T? res)) {
         return Task.FromResult(res);
       }
       else {
@@ -145,7 +145,7 @@ namespace EztransServer.Gui {
     }
 
     public void Enqueue(T value) {
-      while (Clients.TryDequeue(out Client client)) {
+      while (Clients.TryDequeue(out Client? client)) {
         client.Cancelling.Dispose();
         if (client.Waiting.TrySetResult(value)) {
           return;
@@ -155,7 +155,7 @@ namespace EztransServer.Gui {
     }
 
     public void Abort() {
-      while (Clients.TryDequeue(out Client client)) {
+      while (Clients.TryDequeue(out Client? client)) {
         client.Cancelling.Dispose();
         client.Waiting.TrySetCanceled();
       }
